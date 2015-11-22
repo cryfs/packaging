@@ -1,11 +1,11 @@
 .PHONY: all packages machines
 
 REPOSITORY := "https://github.com/cryfs/cryfs"
-TAG := "0.8.2"
+TAG := "4bdd5"
 
 all: packages
 
-DOCKERFILES := $(shell find docker -name "*.dockerfile")
+DOCKERFILES := $(shell find docker -name "*.dockerfile" | sed -n 's|^docker/||p')
 
 # -------------------------------------------------------------------------------
 # Build docker containers for the operating systems we want to build packages for
@@ -15,7 +15,7 @@ CONTAINERTARGETS := $(DOCKERFILES:.dockerfile=.image)
 
 containers: $(CONTAINERTARGETS)
 
-docker/%.image: docker/%.dockerfile
+%.image: docker/%.dockerfile
 	docker build -t cryfs/$* -f $< docker
 
 # -------------------------------------
@@ -26,5 +26,5 @@ PACKAGETARGETS := $(addprefix build/,$(DOCKERFILES:.dockerfile=.deb))
 
 packages: $(PACKAGETARGETS)
 
-build/%.deb: docker/%.image
+build/%.deb: %.image
 	docker run cryfs/$* $(REPOSITORY) $(TAG) > $@
