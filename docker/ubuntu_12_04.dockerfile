@@ -5,7 +5,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get -y upgrade && \
     DEBIAN_FRONTEND=noninteractive apt-get -y dist-upgrade
 
-RUN DEBIAN_FRONTENT=noninteractive apt-get install -y wget git python sudo software-properties-common python-software-properties rpm libfuse-dev
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y wget git python sudo software-properties-common python-software-properties rpm libfuse-dev
 
 # Update gcc
 RUN DEBIAN_FRONTEND=noninteractive add-apt-repository ppa:ubuntu-toolchain-r/test -y && \

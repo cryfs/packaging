@@ -5,7 +5,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get -y upgrade && \
     DEBIAN_FRONTEND=noninteractive apt-get -y dist-upgrade
 
-RUN DEBIAN_FRONTENT=noninteractive apt-get install -y wget git python sudo rpm cmake g++ libfuse-dev
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y wget git python sudo rpm cmake g++ libfuse-dev
 
 # Install biicode
 COPY install_biicode.sh /install_biicode.sh
