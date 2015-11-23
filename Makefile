@@ -1,30 +1,29 @@
 .PHONY: all packages machines
 
-REPOSITORY := "https://github.com/cryfs/cryfs"
-TAG := "4bdd5"
+TAG := "ea151d6800625daa106b41c7a68cb1ee2aec4f27"
 
-all: packages
+all: ubuntu-15.10-x86_64 ubuntu-15.10-x86 ubuntu-15.04-x86_64 ubuntu-15.04-x86 ubuntu-14.04-x86_64 ubuntu-14.04-x86 ubuntu-12.04-x86_64 ubuntu-12.04-x86 
 
-DOCKERFILES := $(shell find docker -name "*.dockerfile" | sed -n 's|^docker/||p')
+ubuntu-15.10-x86_64:
+	./build.sh ubuntu-15.10-x86_64 $(TAG)
 
-# -------------------------------------------------------------------------------
-# Build docker containers for the operating systems we want to build packages for
-# -------------------------------------------------------------------------------
+ubuntu-15.10-x86:
+	./build.sh ubuntu-15.10-x86 $(TAG)
 
-CONTAINERTARGETS := $(DOCKERFILES:.dockerfile=.image)
+ubuntu-15.04-x86_64:
+	./build.sh ubuntu-15.04-x86_64 $(TAG)
 
-containers: $(CONTAINERTARGETS)
+ubuntu-15.04-x86:
+	./build.sh ubuntu-15.04-x86 $(TAG)
 
-%.image: docker/%.dockerfile
-	docker build -t cryfs/$* -f $< docker
+ubuntu-14.04-x86_64:
+	./build.sh ubuntu-14.04-x86_64 $(TAG)
 
-# -------------------------------------
-# Build packages using these containers
-# -------------------------------------
+ubuntu-14.04-x86:
+	./build.sh ubuntu-14.04-x86 $(TAG)
 
-PACKAGETARGETS := $(addprefix build/,$(DOCKERFILES:.dockerfile=.deb))
+ubuntu-12.04-x86_64:
+	./build.sh ubuntu-12.04-x86_64 $(TAG)
 
-packages: $(PACKAGETARGETS)
-
-build/%.deb: %.image
-	docker run cryfs/$* $(REPOSITORY) $(TAG) > $@
+ubuntu-12.04-x86:
+	./build.sh ubuntu-12.04-x86 $(TAG)

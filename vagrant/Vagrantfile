@@ -1,0 +1,110 @@
+def bootstrap(config)
+  # Install biicode
+  config.vm.provision :shell, path: "install_biicode.sh"
+
+  # Run build one time, so the boost libraries are downloaded and compiled (we don't want that to happen on each call)
+  config.vm.provision :shell, inline: <<-SHELL
+    sudo -H -u vagrant /vagrant/init_package.sh https://github.com/cryfs/cryfs 0.8.1 /tmp/sourcedir
+    rm -rf /tmp/sourcedir
+  SHELL
+end
+
+def update_gcc(config)
+  # Run build one time, so the boost libraries are downloaded and compiled (we don't want that to happen on each call)
+  config.vm.provision :shell, inline: <<-SHELL
+    DEBIAN_FRONTEND=noninteractive add-apt-repository ppa:ubuntu-toolchain-r/test -y && \
+    DEBIAN_FRONTEND=noninteractive apt-get update -qq && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y g++-4.9 gcc-4.9 cmake make && \
+    DEBIAN_FRONTEND=noninteractive update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.9 90 && \
+    DEBIAN_FRONTEND=noninteractive update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 90
+  SHELL
+end
+
+def bootstrap_ubuntu_15_10(config)
+    config.vm.provision :shell, inline: <<-SHELL
+      DEBIAN_FRONTEND=noninteractive sudo apt-get install -y git rpm cmake g++ libcurl4-openssl-dev libfuse-dev
+    SHELL
+
+    bootstrap(config)
+end
+
+def bootstrap_ubuntu_15_04(config)
+    config.vm.provision :shell, inline: <<-SHELL
+      DEBIAN_FRONTEND=noninteractive sudo apt-get install -y git rpm cmake g++ libcurl4-openssl-dev libfuse-dev
+    SHELL
+
+    bootstrap(config)
+end
+
+def bootstrap_ubuntu_14_04(config)
+    config.vm.provision :shell, inline: <<-SHELL
+      DEBIAN_FRONTEND=noninteractive sudo apt-get install -y git rpm software-properties-common libcurl4-openssl-dev libfuse-dev
+    SHELL
+
+    update_gcc(config)
+    bootstrap(config)
+end
+
+def bootstrap_ubuntu_12_04(config)
+    config.vm.provision :shell, inline: <<-SHELL
+      DEBIAN_FRONTEND=noninteractive sudo apt-get install -y git rpm software-properties-common python-software-properties libcurl4-openssl-dev libfuse-dev
+    SHELL
+
+    update_gcc(config)
+    bootstrap(config)
+end
+
+Vagrant.configure(2) do |config|
+  # Update system
+  config.vm.provision :shell, inline: <<-SHELL
+    DEBIAN_FRONTEND=noninteractive sudo apt-get update
+    DEBIAN_FRONTEND=noninteractive sudo apt-get upgrade
+    DEBIAN_FRONTEND=noninteractive sudo apt-get dist-upgrade
+  SHELL
+
+  config.vm.provider "virtualbox" do |v|
+    v.memory = 16384
+    v.cpus = 4
+  end
+
+  config.vm.define "ubuntu-15.10-x86_64" do |node|
+    node.vm.box = "ubuntu/wily64"
+    bootstrap_ubuntu_15_10(node)
+  end
+
+  config.vm.define "ubuntu-15.10-x86" do |node|
+    node.vm.box = "ubuntu/wily32"
+    bootstrap_ubuntu_15_10(node)
+  end
+
+  config.vm.define "ubuntu-15.04-x86_64" do |node|
+    node.vm.box = "ubuntu/vivid64"
+    bootstrap_ubuntu_15_04(node)
+  end
+
+  config.vm.define "ubuntu-15.04-x86" do |node|
+    node.vm.box = "ubuntu/vivid32"
+    bootstrap_ubuntu_15_04(node)
+  end
+
+  config.vm.define "ubuntu-14.04-x86_64" do |node|
+    node.vm.box = "ubuntu/trusty64"
+    bootstrap_ubuntu_14_04(node)
+  end
+
+  config.vm.define "ubuntu-14.04-x86" do |node|
+    node.vm.box = "ubuntu/trusty32"
+    bootstrap_ubuntu_14_04(node)
+  end
+
+  config.vm.define "ubuntu-12.04-x86_64" do |node|
+    node.vm.box = "ubuntu/precise64"
+    bootstrap_ubuntu_12_04(node)
+  end
+
+  config.vm.define "ubuntu-12.04-x86" do |node|
+    node.vm.box = "ubuntu/precise32"
+    bootstrap_ubuntu_12_04(node)
+  end
+end
+
