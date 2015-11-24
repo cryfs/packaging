@@ -66,6 +66,10 @@ Vagrant.configure(2) do |config|
     v.cpus = 4
   end
 
+  # -----------------------------------
+  # Machines for building .deb packages
+  # -----------------------------------
+
   config.vm.define "ubuntu-15.10-x86_64" do |node|
     node.vm.box = "ubuntu/wily64"
     bootstrap_ubuntu_15_10(node)
@@ -104,6 +108,42 @@ Vagrant.configure(2) do |config|
   config.vm.define "ubuntu-12.04-x86" do |node|
     node.vm.box = "ubuntu/precise32"
     bootstrap_ubuntu_12_04(node)
+  end
+
+  # ----------------------------------
+  # Machines for testing .deb packages
+  # ----------------------------------
+
+  config.vm.define "ubuntu-15.10-x86_64-test" do |node|
+    node.vm.box = "ubuntu/wily64"
+  end
+
+  config.vm.define "ubuntu-15.10-x86-test" do |node|
+    node.vm.box = "ubuntu/wily32"
+  end
+
+  config.vm.define "ubuntu-15.04-x86_64-test" do |node|
+    node.vm.box = "ubuntu/vivid64"
+  end
+
+  config.vm.define "ubuntu-15.04-x86-test" do |node|
+    node.vm.box = "ubuntu/vivid32"
+  end
+
+  config.vm.define "ubuntu-14.04-x86_64-test" do |node|
+    node.vm.box = "ubuntu/trusty64"
+  end
+
+  config.vm.define "ubuntu-14.04-x86-test" do |node|
+    node.vm.box = "ubuntu/trusty32"
+  end
+
+  config.vm.define "ubuntu-12.04-x86_64-test" do |node|
+    node.vm.box = "ubuntu/precise64"
+  end
+
+  config.vm.define "ubuntu-12.04-x86-test" do |node|
+    node.vm.box = "ubuntu/precise32"
   end
 end
 
