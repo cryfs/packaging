@@ -14,9 +14,9 @@ def update_gcc(config)
   config.vm.provision :shell, inline: <<-SHELL
     DEBIAN_FRONTEND=noninteractive add-apt-repository ppa:ubuntu-toolchain-r/test -y && \
     DEBIAN_FRONTEND=noninteractive apt-get update -qq && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y g++-4.9 gcc-4.9 cmake make && \
-    DEBIAN_FRONTEND=noninteractive update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.9 90 && \
-    DEBIAN_FRONTEND=noninteractive update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 90
+    DEBIAN_FRONTEND=noninteractive apt-get install -y g++-4.8 gcc-4.8 cmake make && \
+    DEBIAN_FRONTEND=noninteractive update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 90 && \
+    DEBIAN_FRONTEND=noninteractive update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.8 90
   SHELL
 end
 
