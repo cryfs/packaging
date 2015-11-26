@@ -8,10 +8,7 @@ set -e
 # Switch to directory of script
 cd ${0%/*}
 
-cd vagrant
-vagrant up $VIRTUAL_MACHINE
-vagrant ssh $VIRTUAL_MACHINE -c "/vagrant/build_package.sh https://github.com/cryfs/cryfs $TAG /vagrant/build/cryfs_${TAG}_${VIRTUAL_MACHINE}.deb"
-sleep 2
-vagrant halt $VIRTUAL_MACHINE
+rm -f vagrant/build/cryfs_${TAG}_${VIRTUAL_MACHINE}.deb
+./run_in_vm.sh $VIRTUAL_MACHINE /vagrant/build_package.sh https://github.com/cryfs/cryfs $TAG /vagrant/build/cryfs_${TAG}_${VIRTUAL_MACHINE}.deb
 
 set +e
