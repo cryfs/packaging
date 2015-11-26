@@ -53,6 +53,14 @@ def bootstrap_ubuntu_12_04(config)
     bootstrap(config)
 end
 
+def bootstrap_debian_8(config)
+    bootstrap(config)
+end
+
+def bootstrap_debian_7(config)
+    bootstrap(config)
+end
+
 Vagrant.configure(2) do |config|
   # Update system
   config.vm.provision :shell, inline: <<-SHELL
@@ -62,7 +70,7 @@ Vagrant.configure(2) do |config|
   SHELL
 
   config.vm.provider "virtualbox" do |v|
-    v.memory = 16384
+    v.memory = 14336
     v.cpus = 4
   end
 
@@ -110,6 +118,26 @@ Vagrant.configure(2) do |config|
     bootstrap_ubuntu_12_04(node)
   end
 
+  config.vm.define "debian-8-x86_64" do |node|
+    node.vm.box = "debian/jessie64"
+    bootstrap_debian_8(node)
+  end
+
+  config.vm.define "debian-8-x86" do |node|
+    node.vm.box = "debian/jessie32"
+    bootstrap_debian_8(node)
+  end
+
+  config.vm.define "debian-7-x86_64" do |node|
+    node.vm.box = "debian/wheezy64"
+    bootstrap_debian_7(node)
+  end
+
+  config.vm.define "debian-7-x86" do |node|
+    node.vm.box = "debian/wheezy32"
+    bootstrap_debian_7(node)
+  end
+
   # ----------------------------------
   # Machines for testing .deb packages
   # ----------------------------------
@@ -144,6 +172,22 @@ Vagrant.configure(2) do |config|
 
   config.vm.define "ubuntu-12.04-x86-test" do |node|
     node.vm.box = "ubuntu/precise32"
+  end
+
+  config.vm.define "debian-8-x86_64-test" do |node|
+    node.vm.box = "debian/jessie64"
+  end
+
+  config.vm.define "debian-8-x86-test" do |node|
+    node.vm.box = "debian/jessie32"
+  end
+
+  config.vm.define "debian-7-x86_64-test" do |node|
+    node.vm.box = "debian/wheezy64"
+  end
+
+  config.vm.define "debian-7-x86-test" do |node|
+    node.vm.box = "debian/wheezy32"
   end
 end
 
