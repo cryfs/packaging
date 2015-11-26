@@ -11,7 +11,10 @@ cd ${0%/*}
 cd vagrant
 vagrant up $VIRTUAL_MACHINE
 vagrant ssh $VIRTUAL_MACHINE -c "$COMMAND"
-sleep 5
-vagrant halt $VIRTUAL_MACHINE
+# Try halting the machine until it is successful (vagrant sometimes fails halting machines :( )
+until vagrant halt $VIRTUAL_MACHINE
+do
+  sleep 5
+done
 
 set +e
