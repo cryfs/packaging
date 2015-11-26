@@ -20,9 +20,11 @@ function run_test {
 # Switch to directory of script
 cd ${0%/*}
 
-rm -rf /tmp/sourcedir
-mkdir /tmp/sourcedir
-cd /tmp/sourcedir
+TMPDIR=/tmp/sourcedir-`cat /dev/urandom | tr -cd 'a-f0-9' | head -c 8`
+
+rm -rf $TMPDIR
+mkdir $TMPDIR
+cd $TMPDIR
 bii init
 mkdir blocks
 mkdir blocks/messmer
@@ -39,7 +41,7 @@ run_test blobstore
 run_test fspp
 run_test cryfs
 
-cd ..
-rm -rf /tmp/sourcedir
+cd /
+rm -rf $TMPDIR
 
 set +e
