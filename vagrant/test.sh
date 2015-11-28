@@ -24,6 +24,8 @@ TMPDIR=/tmp/sourcedir-`cat /dev/urandom | tr -cd 'a-f0-9' | head -c 8`
 
 rm -rf $TMPDIR
 mkdir $TMPDIR
+sudo mount -t ramfs ramfs $TMPDIR
+sudo chmod 777 $TMPDIR
 cd $TMPDIR
 bii init
 mkdir blocks
@@ -42,6 +44,7 @@ run_test fspp
 run_test cryfs
 
 cd /
+sudo umount $TMPDIR
 rm -rf $TMPDIR
 
 set +e

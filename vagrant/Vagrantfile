@@ -4,7 +4,11 @@ def bootstrap(config)
 
   # Run build one time, so the boost libraries are downloaded and compiled (we don't want that to happen on each call)
   config.vm.provision :shell, inline: <<-SHELL
+    mkdir /tmp/sourcedir
+    sudo mount -t ramfs ramfs /tmp/sourcedir # RamFS would not be necessary, but makes it faster
+    sudo chmod 777 /tmp/sourcedir
     sudo -H -u vagrant /vagrant/init_package.sh https://github.com/cryfs/cryfs 0.8.3 /tmp/sourcedir
+    sudo umount /tmp/sourcedir
     rm -rf /tmp/sourcedir
   SHELL
 end
