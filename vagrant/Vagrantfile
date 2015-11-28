@@ -54,10 +54,19 @@ def bootstrap_ubuntu_12_04(config)
 end
 
 def bootstrap_debian_8(config)
+    config.vm.provision :shell, inline: <<-SHELL
+      DEBIAN_FRONTEND=noninteractive sudo apt-get install -y git rpm cmake g++ libcurl4-openssl-dev libfuse-dev fuse
+    SHELL
+
     bootstrap(config)
 end
 
 def bootstrap_debian_7(config)
+    config.vm.provision :shell, inline: <<-SHELL
+      DEBIAN_FRONTEND=noninteractive sudo apt-get install -y git rpm software-properties-common python-software-properties libcurl4-openssl-dev libfuse-dev fuse
+    SHELL
+
+    update_gcc(config)
     bootstrap(config)
 end
 
