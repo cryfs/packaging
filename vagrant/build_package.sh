@@ -12,6 +12,7 @@ cd ${0%/*}
 
 TMPDIR=/tmp/sourcedir-`cat /dev/urandom | tr -cd 'a-f0-9' | head -c 8`
 
+rm -rf $DESTFILE
 rm -rf $TMPDIR # Just in case it already exists
 ./init_package.sh $REPOSITORY $TAG $TMPDIR
 cd $TMPDIR
