@@ -44,7 +44,7 @@ end
 def bootstrap_ubuntu_15_04(config)
     config.vm.provision :shell, inline: <<-SHELL
       echo Installing dependencies
-      DEBIAN_FRONTEND=noninteractive apt-get install -y git rpm cmake g++ libcurl4-openssl-dev libfuse-dev
+      DEBIAN_FRONTEND=noninteractive apt-get install -y git rpm cmake g++ python libcurl4-openssl-dev libfuse-dev
     SHELL
 
     install_biicode(config)
@@ -53,7 +53,7 @@ end
 def bootstrap_ubuntu_14_04(config)
     config.vm.provision :shell, inline: <<-SHELL
       echo Installing dependencies
-      DEBIAN_FRONTEND=noninteractive apt-get install -y git rpm cmake g++ libcurl4-openssl-dev software-properties-common libfuse-dev
+      DEBIAN_FRONTEND=noninteractive apt-get install -y git rpm cmake g++ python libcurl4-openssl-dev software-properties-common libfuse-dev
     SHELL
 
     install_biicode(config)
@@ -62,7 +62,7 @@ end
 def bootstrap_ubuntu_12_04(config)
     config.vm.provision :shell, inline: <<-SHELL
       echo Installing dependencies
-      DEBIAN_FRONTEND=noninteractive apt-get install -y git rpm software-properties-common libcurl4-openssl-dev python-software-properties libfuse-dev
+      DEBIAN_FRONTEND=noninteractive apt-get install -y git rpm python software-properties-common libcurl4-openssl-dev python-software-properties libfuse-dev
     SHELL
 
     update_gcc(config)
@@ -73,7 +73,7 @@ def bootstrap_debian_8(config)
     # Problem with debian on digital ocean: https://github.com/smdahlen/vagrant-digitalocean/issues/203
     config.vm.provision :shell, inline: <<-SHELL
       echo Installing dependencies
-      DEBIAN_FRONTEND=noninteractive apt-get install -y git rpm cmake g++ libcurl4-openssl-dev libfuse-dev fuse
+      DEBIAN_FRONTEND=noninteractive apt-get install -y git rpm cmake python g++ libcurl4-openssl-dev libfuse-dev fuse
     SHELL
 
     install_biicode(config)
