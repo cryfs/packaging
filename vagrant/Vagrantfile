@@ -9,8 +9,8 @@ end
 def update_system(config)
   config.vm.provision :shell, inline: <<-SHELL
     echo Updating system
-    DEBIAN_FRONTEND=noninteractive sudo apt-get update
-    DEBIAN_FRONTEND=noninteractive sudo apt-get -y upgrade
+    DEBIAN_FRONTEND=noninteractive sudo apt-get update -qq && \
+    DEBIAN_FRONTEND=noninteractive sudo apt-get -y upgrade && \
     DEBIAN_FRONTEND=noninteractive sudo apt-get -y dist-upgrade
   SHELL
 end
@@ -85,8 +85,8 @@ def bootstrap_debian_7(config)
 
       # Update gcc
       echo Updating gcc
-      printf "deb http://ftp.uk.debian.org/debian/ jessie main non-free contrib" > /etc/apt/sources.list.d/gcc.list
-      printf "Package: *\nPin: release a=wheezy\nPin-Priority: 900\n\nPackage: gcc*\nPin: release a=jessie\nPin-Priority: 910\n" > /etc/apt/preferences
+      printf "deb http://ftp.uk.debian.org/debian/ jessie main non-free contrib" > /etc/apt/sources.list.d/gcc.list && \
+      printf "Package: *\nPin: release a=wheezy\nPin-Priority: 900\n\nPackage: gcc*\nPin: release a=jessie\nPin-Priority: 910\n" > /etc/apt/preferences && \
       DEBIAN_FRONTEND=noninteractive apt-get update -qq && \
       DEBIAN_FRONTEND=noninteractive apt-get install -y g++-4.8 && \
       DEBIAN_FRONTEND=noninteractive update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 90 && \
