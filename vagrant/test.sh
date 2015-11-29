@@ -37,6 +37,7 @@ checkout blobstore https://github.com/cryfs/blobstore
 checkout fspp https://github.com/cryfs/fspp
 checkout cryfs https://github.com/cryfs/cryfs
 cd ../..
+bii configure || bii configure
 run_test cpp-utils
 run_test blockstore
 run_test blobstore
