@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+echo Install biicode
+
 if cat /etc/*-release | grep raspbian; then
   dist="raspbian"
 elif cat /etc/*-release | grep wheezy; then
@@ -33,6 +35,6 @@ wget -O /etc/apt/trusted.gpg.d/biicode.gpg http://apt_new.biicode.com/keyring.gp
 apt-get update
 apt-get -y install biicode
 
-sudo -H -u vagrant bii setup:cpp
+sudo -H -u builder bii setup:cpp
 
 set +e

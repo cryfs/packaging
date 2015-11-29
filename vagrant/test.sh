@@ -1,5 +1,5 @@
 #!/bin/bash
-# Build the package for the specified repository/tag and store it to $DESTFILE
+# Build the specified tag and run all tests
 
 TAG=$1
 
@@ -13,7 +13,7 @@ function checkout {
 }
 
 function run_test {
-  bii build --target messmer_$1_test_main -- -j5
+  bii build --target messmer_$1_test_main
   ./bin/messmer_$1_test_main
 }
 
@@ -24,8 +24,8 @@ TMPDIR=/tmp/sourcedir-`cat /dev/urandom | tr -cd 'a-f0-9' | head -c 8`
 
 rm -rf $TMPDIR
 mkdir $TMPDIR
-sudo mount -t ramfs ramfs $TMPDIR
-sudo chmod 777 $TMPDIR
+#sudo mount -t ramfs ramfs $TMPDIR
+#sudo chmod 777 $TMPDIR
 cd $TMPDIR
 bii init
 mkdir blocks
@@ -44,7 +44,7 @@ run_test fspp
 run_test cryfs
 
 cd /
-sudo umount $TMPDIR
+#sudo umount $TMPDIR
 rm -rf $TMPDIR
 
 set +e

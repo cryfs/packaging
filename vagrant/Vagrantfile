@@ -1,206 +1,296 @@
-def bootstrap(config)
+def init(config)
+  # Add system user
+  config.vm.provision :shell, inline: <<-SHELL
+    echo Adding system user
+    useradd -m builder
+  SHELL
+end
+
+def update_system(config)
+  config.vm.provision :shell, inline: <<-SHELL
+    echo Updating system
+    DEBIAN_FRONTEND=noninteractive sudo apt-get update
+    DEBIAN_FRONTEND=noninteractive sudo apt-get -y upgrade
+    DEBIAN_FRONTEND=noninteractive sudo apt-get -y dist-upgrade
+  SHELL
+end
+
+def install_biicode(config)
   # Install biicode
   config.vm.provision :shell, path: "install_biicode.sh"
-
-  # Run build one time, so the boost libraries are downloaded and compiled (we don't want that to happen on each call)
-  config.vm.provision :shell, inline: <<-SHELL
-    mkdir /tmp/sourcedir
-    sudo mount -t ramfs ramfs /tmp/sourcedir # RamFS would not be necessary, but makes it faster
-    sudo chmod 777 /tmp/sourcedir
-    sudo -H -u vagrant /vagrant/init_package.sh https://github.com/cryfs/cryfs 0.8.3 /tmp/sourcedir
-    sudo umount /tmp/sourcedir
-    rm -rf /tmp/sourcedir
-  SHELL
 end
 
 def update_gcc(config)
   # Run build one time, so the boost libraries are downloaded and compiled (we don't want that to happen on each call)
   config.vm.provision :shell, inline: <<-SHELL
+    echo Updatíng GCC
     DEBIAN_FRONTEND=noninteractive add-apt-repository ppa:ubuntu-toolchain-r/test -y && \
     DEBIAN_FRONTEND=noninteractive apt-get update -qq && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y g++-4.8 gcc-4.8 cmake make && \
     DEBIAN_FRONTEND=noninteractive update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 90 && \
-    DEBIAN_FRONTEND=noninteractive update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.8 90
+    DEBIAN_FRONTEND=noninteractive update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.8 90 
   SHELL
 end
 
 def bootstrap_ubuntu_15_10(config)
     config.vm.provision :shell, inline: <<-SHELL
-      DEBIAN_FRONTEND=noninteractive sudo apt-get install -y git rpm cmake g++ libcurl4-openssl-dev libfuse-dev
+      echo Installing dependencies
+      DEBIAN_FRONTEND=noninteractive sudo apt-get install -y git rpm cmake g++ python libcurl4-openssl-dev libfuse-dev
     SHELL
 
-    bootstrap(config)
+    install_biicode(config)
 end
 
 def bootstrap_ubuntu_15_04(config)
     config.vm.provision :shell, inline: <<-SHELL
+      echo Installing dependencies
       DEBIAN_FRONTEND=noninteractive sudo apt-get install -y git rpm cmake g++ libcurl4-openssl-dev libfuse-dev
     SHELL
 
-    bootstrap(config)
+    install_biicode(config)
 end
 
 def bootstrap_ubuntu_14_04(config)
     config.vm.provision :shell, inline: <<-SHELL
+      echo Installing dependencies
       DEBIAN_FRONTEND=noninteractive sudo apt-get install -y git rpm cmake g++ libcurl4-openssl-dev software-properties-common libfuse-dev
     SHELL
 
-    bootstrap(config)
+    install_biicode(config)
 end
 
 def bootstrap_ubuntu_12_04(config)
     config.vm.provision :shell, inline: <<-SHELL
+      echo Installing dependencies
       DEBIAN_FRONTEND=noninteractive sudo apt-get install -y git rpm software-properties-common libcurl4-openssl-dev python-software-properties libfuse-dev
     SHELL
 
     update_gcc(config)
-    bootstrap(config)
+    install_biicode(config)
 end
 
 def bootstrap_debian_8(config)
     config.vm.provision :shell, inline: <<-SHELL
+      echo Installing dependencies
       DEBIAN_FRONTEND=noninteractive sudo apt-get install -y git rpm cmake g++ libcurl4-openssl-dev libfuse-dev fuse
     SHELL
 
-    bootstrap(config)
+    install_biicode(config)
 end
 
 def bootstrap_debian_7(config)
     config.vm.provision :shell, inline: <<-SHELL
+      echo Installing dependencies
       DEBIAN_FRONTEND=noninteractive sudo apt-get install -y git rpm software-properties-common python-software-properties libcurl4-openssl-dev libfuse-dev fuse
+
+      # Update gcc
+      echo Updating gcc
+      printf "deb http://ftp.uk.debian.org/debian/ jessie main non-free contrib" > /etc/apt/sources.list.d/gcc.list
+      printf "Package: *\nPin: release a=wheezy\nPin-Priority: 900\n\nPackage: gcc*\nPin: release a=jessie\nPin-Priority: 910\n" > /etc/apt/preferences
+      DEBIAN_FRONTEND=noninteractive apt-get update -qq && \
+      DEBIAN_FRONTEND=noninteractive apt-get install -y g++-4.8 && \
+      DEBIAN_FRONTEND=noninteractive update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 90 && \
+      DEBIAN_FRONTEND=noninteractive update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.8 90 
+
+      # Fix fuse permissions
+      echo Fixing fuse permissions
+      #chmod g+rw /dev/fuse
+      #chgrp fuse /dev/fuse
+      gpasswd -a builder fuse
     SHELL
 
-    update_gcc(config)
-    bootstrap(config)
+    install_biicode(config)
+end
+
+def setup_swap(config)
+    # Add swap space to make it work with low RAM
+    config.vm.provision :shell, inline: <<-SHELL
+      echo Setup swap storage
+      fallocate -l 5G /swapfile
+      chmod 600 /swapfile
+      mkswap /swapfile
+      printf "/swapfile none swap sw 0 0" >> /etc/fstab
+      swapon -a
+      sysctl vm.swappiness=10
+      printf "vm.swappiness=10" >> /etc/sysctl.conf
+      sysctl vm.vfs_cache_pressure=50
+      printf "vm.vfs_cache_pressure=50" >> /etc/sysctl.conf
+    SHELL
+end
+
+def provision(config, provisioner)
+    config.vm.provider :virtualbox do |vb, override|
+      init(override)
+      update_system(override)
+      self.send(provisioner, override)
+    end
+    config.vm.provider :aws do |aws, override|
+      init(override)
+      setup_swap(override)
+      update_system(override)
+      self.send(provisioner, override)
+    end
+    config.vm.provider :digital_ocean do |digitalocean, override|
+      init(override)
+      setup_swap(override)
+      update_system(override)
+      self.send(provisioner, override)
+    end
+end
+
+def setup_box(config, box_name, ami, digitalocean_image)
+    config.vm.provider :virtualbox do |vb, override|
+      override.vm.box = box_name
+    end
+    config.vm.provider :aws do |aws, override|
+      override.vm.box = "dummy"
+      override.vm.box_url = "https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box"
+      aws.ami = ami
+    end
+    config.vm.provider :digital_ocean do |digitalocean, override|
+      override.vm.box = "digital_ocean"
+      digitalocean.image = digitalocean_image
+    end
 end
 
 Vagrant.configure(2) do |config|
-  # Update system
-  config.vm.provision :shell, inline: <<-SHELL
-    DEBIAN_FRONTEND=noninteractive sudo apt-get update
-    DEBIAN_FRONTEND=noninteractive sudo apt-get -y upgrade
-    DEBIAN_FRONTEND=noninteractive sudo apt-get -y dist-upgrade
-  SHELL
+  config.vm.provider :virtualbox do |v|
+    v.memory = 5120
+    v.cpus = 1
+  end
 
-  config.vm.provider "virtualbox" do |v|
-    v.memory = 12288
-    v.cpus = 4
+  config.vm.provider :aws do |aws, override|
+    aws.access_key_id="#{ENV['AWS_ACCESS_KEY_ID']}"
+    aws.secret_access_key="#{ENV['AWS_SECRET_ACCESS_KEY']}"
+    aws.region = "eu-central-1"
+    aws.keypair_name="vagrant-ec2"
+    aws.security_groups=["ssh-only"]
+    aws.instance_type = "t2.micro"
+    override.ssh.username = 'ubuntu'
+    override.ssh.private_key_path = "~/.ssh/vagrant-ec2.pem"
+  end
+
+  config.vm.provider :digital_ocean do |provider, override|
+    provider.token = "#{ENV['DO_TOKEN']}"
+    provider.region = "fra1"
+    provider.size = "512mb"
+    override.ssh.private_key_path = "~/.ssh/vagrant-digitalocean.pem"
   end
 
   # -----------------------------------
   # Machines for building .deb packages
   # -----------------------------------
 
-  config.vm.define "ubuntu-15.10-x86_64" do |node|
-    node.vm.box = "ubuntu/wily64"
-    bootstrap_ubuntu_15_10(node)
+  config.vm.define "ubuntu-15.10-x64" do |node|
+    setup_box(node, "ubuntu/wily64", "ami-ab0210c7", "ubuntu-15-10-x64")
+    provision(node, :bootstrap_ubuntu_15_10)
   end
 
-  config.vm.define "ubuntu-15.10-x86" do |node|
-    node.vm.box = "ubuntu/wily32"
-    bootstrap_ubuntu_15_10(node)
+  config.vm.define "ubuntu-15.10-x32" do |node|
+    setup_box(node, "ubuntu/wily32", "", "ubuntu-15-10-x32")
+    provision(node, :bootstrap_ubuntu_15_10)
   end
 
-  config.vm.define "ubuntu-15.04-x86_64" do |node|
-    node.vm.box = "ubuntu/vivid64"
-    bootstrap_ubuntu_15_04(node)
+  config.vm.define "ubuntu-15.04-x64" do |node|
+    setup_box(node, "ubuntu/vivid64", "ami-900517fc", "ubuntu-15-04-x64")
+    provision(node, :bootstrap_ubuntu_15_04)
   end
 
-  config.vm.define "ubuntu-15.04-x86" do |node|
-    node.vm.box = "ubuntu/vivid32"
-    bootstrap_ubuntu_15_04(node)
+  config.vm.define "ubuntu-15.04-x32" do |node|
+    setup_box(node, "ubuntu/vivid32", "", "ubuntu-15-04-x32")
+    provision(node, :bootstrap_ubuntu_15_04)
   end
 
-  config.vm.define "ubuntu-14.04-x86_64" do |node|
-    node.vm.box = "ubuntu/trusty64"
-    bootstrap_ubuntu_14_04(node)
+  config.vm.define "ubuntu-14.04-x64" do |node|
+    setup_box(node, "ubuntu/trusty64", "ami-02392b6e", "ubuntu-14-04-x64")
+    provision(node, :bootstrap_ubuntu_14_04)
   end
 
-  config.vm.define "ubuntu-14.04-x86" do |node|
-    node.vm.box = "ubuntu/trusty32"
-    bootstrap_ubuntu_14_04(node)
+  config.vm.define "ubuntu-14.04-x32" do |node|
+    setup_box(node, "ubuntu/trusty32", "ami-03392b6f", "ubuntu-14-04-x32")
+    provision(node, :bootstrap_ubuntu_14_04)
   end
 
-  config.vm.define "ubuntu-12.04-x86_64" do |node|
-    node.vm.box = "ubuntu/precise64"
-    bootstrap_ubuntu_12_04(node)
+  config.vm.define "ubuntu-12.04-x64" do |node|
+    setup_box(node, "ubuntu/precise64", "ami-fa041696", "ubuntu-12-04-x64")
+    provision(node, :bootstrap_ubuntu_12_04)
   end
 
-  config.vm.define "ubuntu-12.04-x86" do |node|
-    node.vm.box = "ubuntu/precise32"
-    bootstrap_ubuntu_12_04(node)
+  config.vm.define "ubuntu-12.04-x32" do |node|
+    setup_box(node, "ubuntu/precise32", "ami-fb041697", "ubuntu-12-04-x32")
+    provision(node, :bootstrap_ubuntu_12_04)
   end
 
-  config.vm.define "debian-8-x86_64" do |node|
-    node.vm.box = "debian/jessie64"
-    bootstrap_debian_8(node)
+  config.vm.define "debian-8-x64" do |node|
+    setup_box(node, "debian/jessie64", "", "debian-8-x64")
+    provision(node, :bootstrap_debian_8)
   end
 
-  config.vm.define "debian-8-x86" do |node|
-    node.vm.box = "debian/jessie32"
-    bootstrap_debian_8(node)
+  config.vm.define "debian-8-x32" do |node|
+    setup_box(node, "debian/jessie32", "", "debian-8-x32")
+    provision(node, :bootstrap_debian_8)
   end
 
-  config.vm.define "debian-7-x86_64" do |node|
-    node.vm.box = "debian/wheezy64"
-    bootstrap_debian_7(node)
+  config.vm.define "debian-7-x64" do |node|
+    setup_box(node, "debian/wheezy64", "", "debian-7-0-x64")
+    provision(node, :bootstrap_debian_7)
   end
 
-  config.vm.define "debian-7-x86" do |node|
-    node.vm.box = "debian/wheezy32"
-    bootstrap_debian_7(node)
+  config.vm.define "debian-7-x32" do |node|
+    setup_box(node, "debian/wheezy32", "", "debian-7-0-x32")
+    provision(node, :bootstrap_debian_7)
   end
 
   # ----------------------------------
   # Machines for testing .deb packages
   # ----------------------------------
 
-  config.vm.define "ubuntu-15.10-x86_64-test" do |node|
-    node.vm.box = "ubuntu/wily64"
+  config.vm.define "ubuntu-15.10-x64-test" do |node|
+    setup_box(node, "ubuntu/wily64", "ami-ab0210c7", "ubuntu-15-10-x64")
   end
 
-  config.vm.define "ubuntu-15.10-x86-test" do |node|
-    node.vm.box = "ubuntu/wily32"
+  config.vm.define "ubuntu-15.10-x32-test" do |node|
+    setup_box(node, "ubuntu/wily32", "", "ubuntu-15-10-x32")
   end
 
-  config.vm.define "ubuntu-15.04-x86_64-test" do |node|
-    node.vm.box = "ubuntu/vivid64"
+  config.vm.define "ubuntu-15.04-x64-test" do |node|
+    setup_box(node, "ubuntu/vivid64", "ami-900517fc", "ubuntu-15-04-x64")
   end
 
-  config.vm.define "ubuntu-15.04-x86-test" do |node|
-    node.vm.box = "ubuntu/vivid32"
+  config.vm.define "ubuntu-15.04-x32-test" do |node|
+    setup_box(node, "ubuntu/vivid32", "", "ubuntu-15-04-x32")
   end
 
-  config.vm.define "ubuntu-14.04-x86_64-test" do |node|
-    node.vm.box = "ubuntu/trusty64"
+  config.vm.define "ubuntu-14.04-x64-test" do |node|
+    setup_box(node, "ubuntu/trusty64", "ami-02392b6e", "ubuntu-14-04-x64")
   end
 
-  config.vm.define "ubuntu-14.04-x86-test" do |node|
-    node.vm.box = "ubuntu/trusty32"
+  config.vm.define "ubuntu-14.04-x32-test" do |node|
+    setup_box(node, "ubuntu/trusty32", "ami-03392b6f", "ubuntu-14-04-x32")
   end
 
-  config.vm.define "ubuntu-12.04-x86_64-test" do |node|
-    node.vm.box = "ubuntu/precise64"
+  config.vm.define "ubuntu-12.04-x64-test" do |node|
+    setup_box(node, "ubuntu/precise64", "ami-fa041696", "ubuntu-12-04-x64")
   end
 
-  config.vm.define "ubuntu-12.04-x86-test" do |node|
-    node.vm.box = "ubuntu/precise32"
+  config.vm.define "ubuntu-12.04-x32-test" do |node|
+    setup_box(node, "ubuntu/precise32", "ami-fb041697", "ubuntu-12-04-x32")
   end
 
-  config.vm.define "debian-8-x86_64-test" do |node|
-    node.vm.box = "debian/jessie64"
+  config.vm.define "debian-8-x64-test" do |node|
+    setup_box(node, "debian/jessie64", "", "debian-8-x64")
   end
 
-  config.vm.define "debian-8-x86-test" do |node|
-    node.vm.box = "debian/jessie32"
+  config.vm.define "debian-8-x32-test" do |node|
+    setup_box(node, "debian/jessie32", "", "debian-8-x32")
   end
 
-  config.vm.define "debian-7-x86_64-test" do |node|
-    node.vm.box = "debian/wheezy64"
+  config.vm.define "debian-7-x64-test" do |node|
+    setup_box(node, "debian/wheezy64", "", "debian-7-0-x64")
   end
 
-  config.vm.define "debian-7-x86-test" do |node|
-    node.vm.box = "debian/wheezy32"
+  config.vm.define "debian-7-x32-test" do |node|
+    setup_box(node, "debian/wheezy32", "", "debian-7-0-x32")
   end
 end
 

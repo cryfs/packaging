@@ -8,6 +8,16 @@ set -e
 # Switch to directory of script
 cd ${0%/*}
 
-./run_in_vm.sh $VIRTUAL_MACHINE /vagrant/test.sh $TAG
+if [ "$VIRTUAL_MACHINE" == "" ];then
+  echo Please specify virtual machine
+  exit 1
+fi
+if [ "$TAG" == "" ];then
+  echo Please specify tag
+  exit 1
+fi
+
+
+./run_in_vm.sh $VIRTUAL_MACHINE sudo -H -u builder /vagrant/test.sh $TAG
 
 set +e

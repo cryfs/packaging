@@ -1,0 +1,13 @@
+Set environment variables:
+ - Digital Ocean: DO_TOKEN
+ - Amazon EC2: AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY
+
+Start machines: (from vagrant folder)
+ - Amazon EC2:    $ vagrant up --provider aws ubuntu-{15.10,15.04,14.04,12.04}-{x64,x32} debian-8-{x64,x32}
+ - Digital Ocean: $ vagrant up --provider digital_ocean ubuntu-{15.10,15.04,14.04,12.04}-{x64,x32} debian-8-{x64,x32}
+
+Run tests for version 0.8.3 on all machines: (from main folder)
+$ ./test_all.sh 0.8.3
+
+Build packages for version 0.8.3 on all machines: (from main folder)
+$ ./build_all.sh 0.8.3

@@ -7,6 +7,18 @@ DESTDIR=$3
 
 set -e
 
+if [ "$REPOSITORY" == "" ];then
+  echo Please specify repository
+  exit 1
+fi
+if [ "$TAG" == "" ];then
+  echo Please specify tag
+  exit 1
+fi
+if [ "$DESTDIR" == "" ]; then
+  echo Please specify destdir
+fi
+
 git clone $REPOSITORY $DESTDIR
 cd $DESTDIR
 git checkout $TAG

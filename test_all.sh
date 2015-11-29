@@ -4,15 +4,28 @@ TAG=$1
 
 set -e
 
-./test.sh ubuntu-15.10-x86_64 $TAG
-./test.sh ubuntu-15.04-x86_64 $TAG
-./test.sh ubuntu-14.04-x86_64 $TAG
-./test.sh ubuntu-12.04-x86_64 $TAG
-./test.sh debian-8-x86_64 $TAG
-./test.sh ubuntu-15.10-x86 $TAG
-./test.sh ubuntu-15.04-x86 $TAG
-./test.sh ubuntu-14.04-x86 $TAG
-./test.sh ubuntu-12.04-x86 $TAG
-./test.sh debian-8-x86 $TAG
+if [ "$TAG" == "" ];then
+  echo Please specify tag
+  exit 1
+fi
+
+function runtest {
+  ./test.sh $1 $TAG > build/test-$1.stdout 2> build/test-$1.stderr &
+}
+
+runtest ubuntu-15.10-x64
+runtest ubuntu-15.10-x32
+runtest ubuntu-15.04-x64
+runtest ubuntu-15.04-x32
+runtest ubuntu-14.04-x64
+runtest ubuntu-14.04-x32
+runtest ubuntu-12.04-x64
+runtest ubuntu-12.04-x32
+
+runtest debian-8-x64
+runtest debian-8-x32
+
+# Wait until all finished
+wait
 
 set +e
