@@ -112,10 +112,16 @@ def setup_swap(config)
       printf "/swapfile none swap sw 0 0" >> /etc/fstab
       swapon -a
       sysctl vm.swappiness=10
-      printf "vm.swappiness=10" >> /etc/sysctl.conf
+      printf "vm.swappiness=10\n" >> /etc/sysctl.conf
       sysctl vm.vfs_cache_pressure=50
-      printf "vm.vfs_cache_pressure=50" >> /etc/sysctl.conf
+      printf "vm.vfs_cache_pressure=50\n" >> /etc/sysctl.conf
     SHELL
+end
+
+def finish(config)
+  config.vm.provision :shell, inline: <<-SHELL
+    echo Finished provisioning
+  SHELL
 end
 
 def provision(config, provisioner)
@@ -123,18 +129,21 @@ def provision(config, provisioner)
       init(override)
       update_system(override)
       self.send(provisioner, override)
+      finish(override)
     end
     config.vm.provider :aws do |aws, override|
       init(override)
       setup_swap(override)
       update_system(override)
       self.send(provisioner, override)
+      finish(override)
     end
     config.vm.provider :digital_ocean do |digitalocean, override|
       init(override)
       setup_swap(override)
       update_system(override)
       self.send(provisioner, override)
+      finish(override)
     end
 end
 
@@ -207,7 +216,7 @@ Vagrant.configure(2) do |config|
   end
 
   config.vm.define "ubuntu-14.04-x32" do |node|
-    setup_box(node, "ubuntu/trusty32", "ami-03392b6f", "ubuntu-14-04-x32")
+    setup_box(node, "ubuntu/trusty32", "", "ubuntu-14-04-x32")
     provision(node, :bootstrap_ubuntu_14_04)
   end
 
@@ -217,7 +226,7 @@ Vagrant.configure(2) do |config|
   end
 
   config.vm.define "ubuntu-12.04-x32" do |node|
-    setup_box(node, "ubuntu/precise32", "ami-fb041697", "ubuntu-12-04-x32")
+    setup_box(node, "ubuntu/precise32", "", "ubuntu-12-04-x32")
     provision(node, :bootstrap_ubuntu_12_04)
   end
 
@@ -266,7 +275,7 @@ Vagrant.configure(2) do |config|
   end
 
   config.vm.define "ubuntu-14.04-x32-test" do |node|
-    setup_box(node, "ubuntu/trusty32", "ami-03392b6f", "ubuntu-14-04-x32")
+    setup_box(node, "ubuntu/trusty32", "", "ubuntu-14-04-x32")
   end
 
   config.vm.define "ubuntu-12.04-x64-test" do |node|
@@ -274,7 +283,7 @@ Vagrant.configure(2) do |config|
   end
 
   config.vm.define "ubuntu-12.04-x32-test" do |node|
-    setup_box(node, "ubuntu/precise32", "ami-fb041697", "ubuntu-12-04-x32")
+    setup_box(node, "ubuntu/precise32", "", "ubuntu-12-04-x32")
   end
 
   config.vm.define "debian-8-x64-test" do |node|

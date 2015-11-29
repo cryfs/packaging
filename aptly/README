@@ -1,0 +1,9 @@
+Installation
+============
+$ docker build -t cryfs/aptly .
+
+Initialization
+============
+$ docker run -ti -e AWS_ACCESS_KEY_ID=[key-id] -e AWS_SECRET_ACCESS_KEY=[key] cryfs/aptly
+
+
