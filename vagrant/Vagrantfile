@@ -107,7 +107,7 @@ def setup_swap(config)
     # Add swap space to make it work with low RAM
     config.vm.provision :shell, inline: <<-SHELL
       echo Setup swap storage
-      fallocate -l 5G /swapfile
+      fallocate -l 4G /swapfile
       chmod 600 /swapfile
       mkswap /swapfile
       printf "/swapfile none swap sw 0 0" >> /etc/fstab
