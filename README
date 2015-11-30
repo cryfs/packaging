@@ -8,6 +8,14 @@ Start machines: (from vagrant folder)
 
 Run tests for version 0.8.3 on all machines: (from main folder)
 $ ./test_all.sh 0.8.3
+(output streams will be written to files in build/)
 
 Build packages for version 0.8.3 on all machines: (from main folder)
 $ ./build_all.sh 0.8.3
+(output streams and packages will be written to files in build/)
+
+Run tests for only one machine
+$ ./test.sh ubuntu-15.10-x64 0.8.3
+
+Build package for only one machine
+$ ./build.sh ubuntu-15.10-x64 0.8.3
