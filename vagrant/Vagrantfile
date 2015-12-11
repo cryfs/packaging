@@ -146,9 +146,16 @@ def provision(config, provisioner)
       self.send(provisioner, override)
       finish(override)
     end
+    config.vm.provider :google do |google, override|
+      init(override)
+      setup_swap(override)
+      update_system(override)
+      self.send(provisioner, override)
+      finish(override)
+    end
 end
 
-def setup_box(config, box_name, ami, digitalocean_image)
+def setup_box(config, box_name, ami, digitalocean_image, google_image)
     config.vm.provider :virtualbox do |vb, override|
       override.vm.box = box_name
     end
@@ -161,6 +168,16 @@ def setup_box(config, box_name, ami, digitalocean_image)
       override.vm.box = "digital_ocean"
       digitalocean.image = digitalocean_image
     end
+    config.vm.provider :google do |google, override|
+      override.vm.box = "google"
+      override.vm.box_url = "https://github.com/mitchellh/vagrant-google/raw/master/google.box"
+      google.image = google_image
+      google.name = google_image
+
+      # Run in random zone (but consistently the same image in the same zone), because we have a CPU quota of max. 24 CPUs per zone.
+      zones = ["asia-east1-b", "europe-west1-b", "us-central1-b", "us-east1-b"]
+      google.zone = zones[box_name.hash % zones.length] # Hash box name and use it as index
+    end
 end
 
 def ubuntu_ssh_setup(config)
@@ -171,6 +188,10 @@ def ubuntu_ssh_setup(config)
   config.vm.provider :digital_ocean do |provider, override|
     override.ssh.private_key_path = "~/.ssh/vagrant-digitalocean.pem"
   end
+  config.vm.provider :google do |provider, override|
+    override.ssh.username = 'heinzi'
+    override.ssh.private_key_path = "~/.ssh/google_compute_engine"
+  end
 end
 
 def debian_ssh_setup(config)
@@ -180,6 +201,10 @@ def debian_ssh_setup(config)
   end
   config.vm.provider :digital_ocean do |provider, override|
     override.ssh.private_key_path = "~/.ssh/vagrant-digitalocean.pem"
+  end
+  config.vm.provider :google do |provider, override|
+    override.ssh.username = 'heinzi'
+    override.ssh.private_key_path = "~/.ssh/google_compute_engine"
   end
 end
 
@@ -204,78 +229,87 @@ Vagrant.configure(2) do |config|
     provider.size = "512mb"
   end
 
+  config.vm.provider :google do |google, override|
+    google.google_project_id = "cryfs-1156"
+    google.google_client_email = "sebmessmer@gmail.com"
+    google.google_json_key_location = "/home/heinzi/Informationen/cryfs/google_key.json"
+    google.machine_type = "n1-highcpu-8"
+    google.disk_size = "10" # In GB
+    google.preemptible = true # This is much cheaper, but the machine might be killed if they need resources. In that case, we have to (manually) start over.
+  end
+
   # -----------------------------------
   # Machines for building .deb packages
   # -----------------------------------
 
   config.vm.define "ubuntu-15.10-x64" do |node|
-    setup_box(node, "ubuntu/wily64", "ami-ab0210c7", "ubuntu-15-10-x64")
+    setup_box(node, "ubuntu/wily64", "ami-ab0210c7", "ubuntu-15-10-x64", "ubuntu-1510-wily-v20151114")
     ubuntu_ssh_setup(node)
     provision(node, :bootstrap_ubuntu_15_10)
   end
 
   config.vm.define "ubuntu-15.10-x32" do |node|
-    setup_box(node, "ubuntu/wily32", "", "ubuntu-15-10-x32")
+    setup_box(node, "ubuntu/wily32", "", "ubuntu-15-10-x32", "")
     ubuntu_ssh_setup(node)
     provision(node, :bootstrap_ubuntu_15_10)
   end
 
   config.vm.define "ubuntu-15.04-x64" do |node|
-    setup_box(node, "ubuntu/vivid64", "ami-900517fc", "ubuntu-15-04-x64")
+    setup_box(node, "ubuntu/vivid64", "ami-900517fc", "ubuntu-15-04-x64", "ubuntu-1504-vivid-v20151120")
     ubuntu_ssh_setup(node)
     provision(node, :bootstrap_ubuntu_15_04)
   end
 
   config.vm.define "ubuntu-15.04-x32" do |node|
-    setup_box(node, "ubuntu/vivid32", "", "ubuntu-15-04-x32")
+    setup_box(node, "ubuntu/vivid32", "", "ubuntu-15-04-x32", "")
     ubuntu_ssh_setup(node)
     provision(node, :bootstrap_ubuntu_15_04)
   end
 
   config.vm.define "ubuntu-14.04-x64" do |node|
-    setup_box(node, "ubuntu/trusty64", "ami-02392b6e", "ubuntu-14-04-x64")
+    setup_box(node, "ubuntu/trusty64", "ami-02392b6e", "ubuntu-14-04-x64", "ubuntu-1404-trusty-v20151113")
     ubuntu_ssh_setup(node)
     provision(node, :bootstrap_ubuntu_14_04)
   end
 
   config.vm.define "ubuntu-14.04-x32" do |node|
-    setup_box(node, "ubuntu/trusty32", "", "ubuntu-14-04-x32")
+    setup_box(node, "ubuntu/trusty32", "", "ubuntu-14-04-x32", "")
     ubuntu_ssh_setup(node)
     provision(node, :bootstrap_ubuntu_14_04)
   end
 
   config.vm.define "ubuntu-12.04-x64" do |node|
-    setup_box(node, "ubuntu/precise64", "ami-fa041696", "ubuntu-12-04-x64")
+    setup_box(node, "ubuntu/precise64", "ami-fa041696", "ubuntu-12-04-x64", "ubuntu-1204-precise-v20151119")
     ubuntu_ssh_setup(node)
     provision(node, :bootstrap_ubuntu_12_04)
   end
 
   config.vm.define "ubuntu-12.04-x32" do |node|
-    setup_box(node, "ubuntu/precise32", "", "ubuntu-12-04-x32")
+    setup_box(node, "ubuntu/precise32", "", "ubuntu-12-04-x32", "")
     ubuntu_ssh_setup(node)
     provision(node, :bootstrap_ubuntu_12_04)
   end
 
   config.vm.define "debian-8-x64" do |node|
-    setup_box(node, "debian/jessie64", "ami-02b78e1f", "debian-8-x64")
+    setup_box(node, "debian/jessie64", "ami-02b78e1f", "debian-8-x64", "debian-8-jessie-v20151104")
     debian_ssh_setup(node)
     provision(node, :bootstrap_debian_8)
   end
 
   config.vm.define "debian-7-x64" do |node|
-    setup_box(node, "debian/wheezy64", "ami-98043785", "debian-7-0-x64")
+    setup_box(node, "debian/wheezy64", "ami-98043785", "debian-7-0-x64", "")
     debian_ssh_setup(node)
     provision(node, :bootstrap_debian_7)
   end
 
   #config.vm.define "fedora-23-x64" do |node|
-  #  setup_box(node, "fedora/23-cloud-base", "ami-ac4d5ec0", "fedora-23-x64")
+  #  setup_box(node, "fedora/23-cloud-base", "ami-ac4d5ec0", "fedora-23-x64", "")
   #  fedora_ssh_setup(node)
   #  provision(node, :bootstrap_fedora_23)
   #end
 
   #config.vm.define "fedora-22-x64" do |node|
-  #  setup_box(node, "", "", "fedora-22-x64")
+  #  setup_box(node, "", "", "fedora-22-x64", "")
   #  fedora_ssh_setup(node)
   #  provision(node, :bootstrap_fedora_22)
   #end
@@ -285,62 +319,62 @@ Vagrant.configure(2) do |config|
   # ----------------------------------
 
   config.vm.define "ubuntu-15.10-x64-test" do |node|
-    setup_box(node, "ubuntu/wily64", "ami-ab0210c7", "ubuntu-15-10-x64")
+    setup_box(node, "ubuntu/wily64", "ami-ab0210c7", "ubuntu-15-10-x64", "")
     ubuntu_ssh_setup(node)
   end
 
   config.vm.define "ubuntu-15.10-x32-test" do |node|
-    setup_box(node, "ubuntu/wily32", "", "ubuntu-15-10-x32")
+    setup_box(node, "ubuntu/wily32", "", "ubuntu-15-10-x32", "")
     ubuntu_ssh_setup(node)
   end
 
   config.vm.define "ubuntu-15.04-x64-test" do |node|
-    setup_box(node, "ubuntu/vivid64", "ami-900517fc", "ubuntu-15-04-x64")
+    setup_box(node, "ubuntu/vivid64", "ami-900517fc", "ubuntu-15-04-x64", "")
     ubuntu_ssh_setup(node)
   end
 
   config.vm.define "ubuntu-15.04-x32-test" do |node|
-    setup_box(node, "ubuntu/vivid32", "", "ubuntu-15-04-x32")
+    setup_box(node, "ubuntu/vivid32", "", "ubuntu-15-04-x32", "")
     ubuntu_ssh_setup(node)
   end
 
   config.vm.define "ubuntu-14.04-x64-test" do |node|
-    setup_box(node, "ubuntu/trusty64", "ami-02392b6e", "ubuntu-14-04-x64")
+    setup_box(node, "ubuntu/trusty64", "ami-02392b6e", "ubuntu-14-04-x64", "")
     ubuntu_ssh_setup(node)
   end
 
   config.vm.define "ubuntu-14.04-x32-test" do |node|
-    setup_box(node, "ubuntu/trusty32", "", "ubuntu-14-04-x32")
+    setup_box(node, "ubuntu/trusty32", "", "ubuntu-14-04-x32", "")
     ubuntu_ssh_setup(node)
   end
 
   config.vm.define "ubuntu-12.04-x64-test" do |node|
-    setup_box(node, "ubuntu/precise64", "ami-fa041696", "ubuntu-12-04-x64")
+    setup_box(node, "ubuntu/precise64", "ami-fa041696", "ubuntu-12-04-x64", "")
     ubuntu_ssh_setup(node)
   end
 
   config.vm.define "ubuntu-12.04-x32-test" do |node|
-    setup_box(node, "ubuntu/precise32", "", "ubuntu-12-04-x32")
+    setup_box(node, "ubuntu/precise32", "", "ubuntu-12-04-x32", "")
     ubuntu_ssh_setup(node)
   end
 
   config.vm.define "debian-8-x64-test" do |node|
-    setup_box(node, "debian/jessie64", "ami-02b78e1f", "debian-8-x64")
+    setup_box(node, "debian/jessie64", "ami-02b78e1f", "debian-8-x64", "")
     debian_ssh_setup(node)
   end
 
   config.vm.define "debian-7-x64-test" do |node|
-    setup_box(node, "debian/wheezy64", "ami-98043785", "debian-7-0-x64")
+    setup_box(node, "debian/wheezy64", "ami-98043785", "debian-7-0-x64", "")
     debian_ssh_setup(node)
   end
 
   #config.vm.define "fedora-23-x64-test" do |node|
-  #  setup_box(node, "fedora/23-cloud-base", "ami-ac4d5ec0", "fedora-23-x64")
+  #  setup_box(node, "fedora/23-cloud-base", "ami-ac4d5ec0", "fedora-23-x64", "")
   #  fedora_ssh_setup(node)
   #end
 
   #config.vm.define "fedora-22-x64-test" do |node|
-  #  setup_box(node, "", "", "fedora-22-x64")
+  #  setup_box(node, "", "", "fedora-22-x64", "")
   #  fedora_ssh_setup(node)
   #end
 end

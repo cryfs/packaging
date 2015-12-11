@@ -18,6 +18,7 @@ if [ "$TAG" == "" ];then
 fi
 
 
-./run_in_vm.sh $VIRTUAL_MACHINE sudo -H -u builder /vagrant/test.sh $TAG
+# 2x sudo, because first goes to root, second to builder user
+./run_in_vm.sh $VIRTUAL_MACHINE sudo sudo -H -u builder /vagrant/test.sh $TAG
 
 set +e
