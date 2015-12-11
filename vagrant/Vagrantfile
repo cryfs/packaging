@@ -235,7 +235,11 @@ Vagrant.configure(2) do |config|
     google.google_json_key_location = "/home/heinzi/Informationen/cryfs/google_key.json"
     google.machine_type = "n1-highcpu-8"
     google.disk_size = "10" # In GB
-    google.preemptible = true # This is much cheaper, but the machine might be killed if they need resources. In that case, we have to (manually) start over.
+
+    # This is much cheaper, but the machine might be killed if they need resources. In that case, we have to (manually) start over.
+    google.preemptible = true
+    google.on_host_maintenance = "TERMINATE"
+    google.auto_restart = false
   end
 
   # -----------------------------------
