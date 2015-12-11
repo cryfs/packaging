@@ -5,6 +5,9 @@ TAG=$1
 
 set -e
 
+NUMCORES=`grep -c ^processor /proc/cpuinfo`
+echo Using $NUMCORES cores
+
 function checkout {
   git clone $2 $1
   cd $1
@@ -13,7 +16,7 @@ function checkout {
 }
 
 function run_test {
-  bii build --target messmer_$1_test_main
+  bii build --target messmer_$1_test_main -- -j$NUMCORES
   ./bin/messmer_$1_test_main --gtest_also_run_disabled_tests
 }
 

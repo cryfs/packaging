@@ -7,6 +7,9 @@ DESTFILE=$3
 
 set -e
 
+NUMCORES=`grep -c ^processor /proc/cpuinfo`
+echo Using $NUMCORES cores
+
 # Switch to directory of script
 cd ${0%/*}
 
@@ -31,8 +34,8 @@ mkdir $TMPDIR
 #sudo chmod 777 $TMPDIR
 ./init_package.sh $REPOSITORY $TAG $TMPDIR
 cd $TMPDIR
-bii build
-bii test
+bii build -- -j$NUMCORES
+bii test -j$NUMCORES
 cd bii/build
 make package
 cp *.deb $DESTFILE
