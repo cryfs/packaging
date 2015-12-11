@@ -22,9 +22,6 @@ runtest ubuntu-14.04-x32
 runtest ubuntu-12.04-x64
 runtest ubuntu-12.04-x32
 
-runtest debian-8-x64
-runtest debian-8-x32
-
 # Wait until all finished
 wait
 
