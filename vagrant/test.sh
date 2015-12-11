@@ -14,7 +14,7 @@ function checkout {
 
 function run_test {
   bii build --target messmer_$1_test_main
-  ./bin/messmer_$1_test_main
+  ./bin/messmer_$1_test_main --gtest_also_run_disabled_tests
 }
 
 # Switch to directory of script
