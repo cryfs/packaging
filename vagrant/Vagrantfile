@@ -176,7 +176,7 @@ def setup_box(config, box_name, ami, digitalocean_image, google_image)
 
       # Run in random zone (but consistently the same image in the same zone), because we have a CPU quota of max. 24 CPUs per zone.
       zones = ["asia-east1-b", "europe-west1-b", "us-central1-b", "us-east1-b"]
-      google.zone = zones[box_name.hash % zones.length] # Hash box name and use it as index
+      google.zone = zones[google_image.sum % zones.length] # Hash box name and use it as index
     end
 end
 
