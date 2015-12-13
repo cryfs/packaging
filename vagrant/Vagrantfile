@@ -300,6 +300,9 @@ Vagrant.configure(2) do |config|
     provision(node, :bootstrap_debian_8)
   end
 
+  # The biicode apt repository doesn't have a biicode .deb file for debian jessie 32bit (that is, also the automated installer provided by them doesn't work, because that uses the apt repository)-
+  # So if we want to support that OS, we'd have to Install biicode there manually (checking out github repositories for biicode/client, biicode/common, and install python dependencies).
+
   config.vm.define "debian-7-x64" do |node|
     setup_box(node, "debian/wheezy64", "ami-98043785", "debian-7-0-x64", "")
     debian_ssh_setup(node)
