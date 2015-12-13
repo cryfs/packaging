@@ -2,7 +2,10 @@ Set environment variables:
  - Digital Ocean: DO_TOKEN
  - Amazon EC2: AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY
 
-Start machines: (from vagrant folder)
+Start machines:
+$ ./start_machines.sh
+
+Start machines manually: (from vagrant folder)
  - Amazon EC2:    $ vagrant up --provider aws ubuntu-{15.10,15.04,14.04,12.04}-{x64,x32} debian-8-{x64,x32}
  - Digital Ocean: $ vagrant up --provider digital_ocean ubuntu-{15.10,15.04,14.04,12.04}-{x64,x32} debian-8-{x64,x32}
 
