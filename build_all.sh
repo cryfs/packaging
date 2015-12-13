@@ -23,7 +23,6 @@ runbuild ubuntu-12.04-x64
 runbuild ubuntu-12.04-x32
 
 runbuild debian-8-x64
-runbuild debian-8-x32
 
 # Wait until all finished
 wait
