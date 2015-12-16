@@ -2,6 +2,7 @@
 
 VIRTUAL_MACHINE=$1
 TAG=$2
+DISTRIBUTION=$3
 
 set -e
 
@@ -17,11 +18,12 @@ if [ "$TAG" == "" ];then
   exit 1
 fi
 
-TMPFILE=./build/cryfs_${TAG}_${VIRTUAL_MACHINE}.deb.`cat /dev/urandom | tr -cd 'a-f0-9' | head -c 8`.tmp
+TMPFILE=./build/$DISTRIBUTION/cryfs_${TAG}_${VIRTUAL_MACHINE}.deb.`cat /dev/urandom | tr -cd 'a-f0-9' | head -c 8`.tmp
 
-rm -f ./build/cryfs_${TAG}_${VIRTUAL_MACHINE}.deb
+mkdir -p ./build/$DISTRIBUTION
+rm -f ./build/$DISTRIBUTION/cryfs_${TAG}_${VIRTUAL_MACHINE}.deb
 # 2x sudo, because first goes to root, second to builder user
 ./run_in_vm.sh $VIRTUAL_MACHINE sudo sudo -H -u builder /vagrant/build_and_output_package.sh https://github.com/cryfs/cryfs $TAG > $TMPFILE
-mv $TMPFILE ./build/cryfs_${TAG}_${VIRTUAL_MACHINE}.deb
+mv $TMPFILE ./build/$DISTRIBUTION/cryfs_${TAG}_${VIRTUAL_MACHINE}.deb
 
 set +e
