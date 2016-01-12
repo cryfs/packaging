@@ -32,12 +32,33 @@ def update_gcc(config)
   SHELL
 end
 
+def update_cmake(config)
+  config.vm.provision :shell, inline: <<-SHELL
+    echo Updating CMake
+    if [ "x86_64" == "$(uname -m)" ]; then
+      ARCH="x86_64"
+    else
+      ARCH="i386"
+    fi
+    if (cat /etc/issue | grep "Ubuntu 12.04"); then
+      # the cmake.org certificate is too new for the wget client on Ubuntu 12.04
+      PARAMS="--no-check-certificate"
+    else
+      PARAMS=""
+    fi
+    wget ${PARAMS} https://cmake.org/files/v3.3/cmake-3.3.2-Linux-${ARCH}.tar.gz
+    tar -xf cmake-3.3.2-Linux-${ARCH}.tar.gz
+    cp -R cmake-3.3.2-Linux-${ARCH}/* /usr
+  SHELL
+end
+
 def bootstrap_ubuntu_15_10(config)
     config.vm.provision :shell, inline: <<-SHELL
       echo Installing dependencies
       DEBIAN_FRONTEND=noninteractive apt-get install -y git dpkg-dev rpm cmake g++ python libcurl4-openssl-dev libfuse-dev
     SHELL
 
+    update_cmake(config)
     install_biicode(config)
 end
 
@@ -47,6 +68,7 @@ def bootstrap_ubuntu_15_04(config)
       DEBIAN_FRONTEND=noninteractive apt-get install -y git dpkg-dev rpm cmake g++ python libcurl4-openssl-dev libfuse-dev
     SHELL
 
+    update_cmake(config)
     install_biicode(config)
 end
 
@@ -56,6 +78,7 @@ def bootstrap_ubuntu_14_04(config)
       DEBIAN_FRONTEND=noninteractive apt-get install -y git dpkg-dev rpm cmake g++ python libcurl4-openssl-dev software-properties-common libfuse-dev
     SHELL
 
+    update_cmake(config)
     install_biicode(config)
 end
 
@@ -66,6 +89,7 @@ def bootstrap_ubuntu_12_04(config)
     SHELL
 
     update_gcc(config)
+    update_cmake(config)
     install_biicode(config)
 end
 
@@ -76,6 +100,7 @@ def bootstrap_debian_8(config)
       DEBIAN_FRONTEND=noninteractive apt-get install -y git dpkg-dev rpm cmake python g++ libcurl4-openssl-dev libfuse-dev fuse
     SHELL
 
+    update_cmake(config)
     install_biicode(config)
 end
 
@@ -100,6 +125,7 @@ def bootstrap_debian_7(config)
       gpasswd -a builder fuse
     SHELL
 
+    update_cmake(config)
     install_biicode(config)
 end
 
