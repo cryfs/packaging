@@ -38,6 +38,7 @@ function cleanup {
   rm  -rf /tmp/gpg-homedir
 }
 trap cleanup EXIT
+rm -rf /tmp/gpg-homedir
 cp -R $GPG_HOMEDIR /tmp/gpg-homedir
 
 ./build.sh
