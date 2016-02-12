@@ -28,19 +28,23 @@ fi
 TMPDIR=/tmp/sourcedir-`cat /dev/urandom | tr -cd 'a-f0-9' | head -c 8`
 
 rm -rf $DESTFILE
-rm -rf $TMPDIR # Just in case it already exists
+rm -rf $TMPDIR
 mkdir $TMPDIR
 #sudo mount -t ramfs ramfs $TMPDIR
 #sudo chmod 777 $TMPDIR
-./init_package.sh $REPOSITORY $TAG $TMPDIR
-cd $TMPDIR
-bii build -- -j$NUMCORES
-bii test -j$NUMCORES
-cd bii/build
-make package
+
+git clone https://github.com/cryfs/cryfs $TMPDIR/cryfs
+cd $TMPDIR/cryfs
+git checkout $TAG
+
+mkdir build
+cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=off
+make package -j$NUMCORES
 cp *.deb $DESTFILE
 cd /
 #sudo umount $TMPDIR
 rm -rf $TMPDIR
 
 set +e
+
