@@ -50,7 +50,7 @@ end
 def bootstrap_ubuntu_15_10(config)
     config.vm.provision :shell, inline: <<-SHELL
       echo Installing dependencies
-      DEBIAN_FRONTEND=noninteractive apt-get install -y git dpkg-dev rpm cmake g++ python libcurl4-openssl-dev libfuse-dev
+      DEBIAN_FRONTEND=noninteractive apt-get install -y git dpkg-dev rpm cmake g++ python libcurl4-openssl-dev libfuse-dev libcrypto++-dev libssl-dev libboost-filesystem-dev libboost-program-options-dev libboost-thread-dev
     SHELL
 
     update_cmake(config)
@@ -59,7 +59,7 @@ end
 def bootstrap_ubuntu_15_04(config)
     config.vm.provision :shell, inline: <<-SHELL
       echo Installing dependencies
-      DEBIAN_FRONTEND=noninteractive apt-get install -y git dpkg-dev rpm cmake g++ python libcurl4-openssl-dev libfuse-dev libcrypto++-dev
+      DEBIAN_FRONTEND=noninteractive apt-get install -y git dpkg-dev rpm cmake g++ python libcurl4-openssl-dev libfuse-dev libcrypto++-dev libssl-dev libboost-filesystem-dev libboost-program-options-dev libboost-thread-dev
     SHELL
 
     update_cmake(config)
@@ -68,7 +68,7 @@ end
 def bootstrap_ubuntu_14_04(config)
     config.vm.provision :shell, inline: <<-SHELL
       echo Installing dependencies
-      DEBIAN_FRONTEND=noninteractive apt-get install -y git dpkg-dev rpm cmake g++ python libcurl4-openssl-dev software-properties-common libfuse-dev libcrypto++-dev
+      DEBIAN_FRONTEND=noninteractive apt-get install -y git dpkg-dev rpm cmake g++ python libcurl4-openssl-dev software-properties-common libfuse-dev libcrypto++-dev libssl-dev libboost-filesystem-dev libboost-program-options-dev libboost-thread-dev
     SHELL
 
     update_cmake(config)
@@ -77,7 +77,7 @@ end
 def bootstrap_ubuntu_12_04(config)
     config.vm.provision :shell, inline: <<-SHELL
       echo Installing dependencies
-      DEBIAN_FRONTEND=noninteractive apt-get install -y git dpkg-dev rpm python software-properties-common libcurl4-openssl-dev python-software-properties libfuse-dev libcrypto++-dev
+      DEBIAN_FRONTEND=noninteractive apt-get install -y git dpkg-dev rpm python software-properties-common libcurl4-openssl-dev python-software-properties libfuse-dev libssl-dev libcrypto++-dev libboost-filesystem-dev libboost-program-options-dev libboost-thread-dev
     SHELL
 
     update_gcc(config)
@@ -88,7 +88,7 @@ def bootstrap_debian_8(config)
     # Problem with debian on digital ocean: https://github.com/smdahlen/vagrant-digitalocean/issues/203
     config.vm.provision :shell, inline: <<-SHELL
       echo Installing dependencies
-      DEBIAN_FRONTEND=noninteractive apt-get install -y git dpkg-dev rpm cmake python g++ libcurl4-openssl-dev libfuse-dev fuse libcrypto++-dev
+      DEBIAN_FRONTEND=noninteractive apt-get install -y git dpkg-dev rpm cmake python g++ libcurl4-openssl-dev libfuse-dev fuse libcrypto++-dev libssl-dev libboost-filesystem-dev libboost-program-options-dev libboost-thread-dev
     SHELL
 
     update_cmake(config)
@@ -97,7 +97,7 @@ end
 def bootstrap_debian_7(config)
     config.vm.provision :shell, inline: <<-SHELL
       echo Installing dependencies
-      DEBIAN_FRONTEND=noninteractive apt-get install -y git rpm dpkg-dev software-properties-common python-software-properties libcurl4-openssl-dev libfuse-dev fuse libcrypto++-dev
+      DEBIAN_FRONTEND=noninteractive apt-get install -y git rpm dpkg-dev software-properties-common python-software-properties libcurl4-openssl-dev libfuse-dev fuse libcrypto++-dev libssl-dev libboost-filesystem-dev libboost-program-options-dev libboost-thread-dev
 
       # Update gcc
       echo Updating gcc
@@ -225,8 +225,10 @@ end
 
 Vagrant.configure(2) do |config|
   config.vm.provider :virtualbox do |v|
-    v.memory = 5120
-    v.cpus = 1
+    v.memory = 8192
+    v.cpus = 4
+    # Needed for 32bit clients to be able to access multiple CPUs
+    v.customize ["modifyvm", :id, "--ioapic", "on"]
   end
 
   config.vm.provider :aws do |aws, override|
