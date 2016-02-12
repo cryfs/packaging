@@ -15,11 +15,6 @@ def update_system(config)
   SHELL
 end
 
-def install_biicode(config)
-  # Install biicode
-  config.vm.provision :shell, path: "install_biicode.sh"
-end
-
 def update_gcc(config)
   # Run build one time, so the boost libraries are downloaded and compiled (we don't want that to happen on each call)
   config.vm.provision :shell, inline: <<-SHELL
@@ -59,55 +54,50 @@ def bootstrap_ubuntu_15_10(config)
     SHELL
 
     update_cmake(config)
-    install_biicode(config)
 end
 
 def bootstrap_ubuntu_15_04(config)
     config.vm.provision :shell, inline: <<-SHELL
       echo Installing dependencies
-      DEBIAN_FRONTEND=noninteractive apt-get install -y git dpkg-dev rpm cmake g++ python libcurl4-openssl-dev libfuse-dev
+      DEBIAN_FRONTEND=noninteractive apt-get install -y git dpkg-dev rpm cmake g++ python libcurl4-openssl-dev libfuse-dev libcrypto++-dev
     SHELL
 
     update_cmake(config)
-    install_biicode(config)
 end
 
 def bootstrap_ubuntu_14_04(config)
     config.vm.provision :shell, inline: <<-SHELL
       echo Installing dependencies
-      DEBIAN_FRONTEND=noninteractive apt-get install -y git dpkg-dev rpm cmake g++ python libcurl4-openssl-dev software-properties-common libfuse-dev
+      DEBIAN_FRONTEND=noninteractive apt-get install -y git dpkg-dev rpm cmake g++ python libcurl4-openssl-dev software-properties-common libfuse-dev libcrypto++-dev
     SHELL
 
     update_cmake(config)
-    install_biicode(config)
 end
 
 def bootstrap_ubuntu_12_04(config)
     config.vm.provision :shell, inline: <<-SHELL
       echo Installing dependencies
-      DEBIAN_FRONTEND=noninteractive apt-get install -y git dpkg-dev rpm python software-properties-common libcurl4-openssl-dev python-software-properties libfuse-dev
+      DEBIAN_FRONTEND=noninteractive apt-get install -y git dpkg-dev rpm python software-properties-common libcurl4-openssl-dev python-software-properties libfuse-dev libcrypto++-dev
     SHELL
 
     update_gcc(config)
     update_cmake(config)
-    install_biicode(config)
 end
 
 def bootstrap_debian_8(config)
     # Problem with debian on digital ocean: https://github.com/smdahlen/vagrant-digitalocean/issues/203
     config.vm.provision :shell, inline: <<-SHELL
       echo Installing dependencies
-      DEBIAN_FRONTEND=noninteractive apt-get install -y git dpkg-dev rpm cmake python g++ libcurl4-openssl-dev libfuse-dev fuse
+      DEBIAN_FRONTEND=noninteractive apt-get install -y git dpkg-dev rpm cmake python g++ libcurl4-openssl-dev libfuse-dev fuse libcrypto++-dev
     SHELL
 
     update_cmake(config)
-    install_biicode(config)
 end
 
 def bootstrap_debian_7(config)
     config.vm.provision :shell, inline: <<-SHELL
       echo Installing dependencies
-      DEBIAN_FRONTEND=noninteractive apt-get install -y git rpm dpkg-dev software-properties-common python-software-properties libcurl4-openssl-dev libfuse-dev fuse
+      DEBIAN_FRONTEND=noninteractive apt-get install -y git rpm dpkg-dev software-properties-common python-software-properties libcurl4-openssl-dev libfuse-dev fuse libcrypto++-dev
 
       # Update gcc
       echo Updating gcc
@@ -126,7 +116,6 @@ def bootstrap_debian_7(config)
     SHELL
 
     update_cmake(config)
-    install_biicode(config)
 end
 
 def setup_swap(config)
@@ -258,14 +247,14 @@ Vagrant.configure(2) do |config|
   config.vm.provider :google do |google, override|
     google.google_project_id = "cryfs-1156"
     google.google_client_email = "sebmessmer@gmail.com"
-    google.google_json_key_location = "/home/heinzi/Informationen/cryfs/google_key.json"
+    google.google_json_key_location = "#{ENV['GOOGLE_JSON_KEY']}"
     google.machine_type = "n1-highcpu-4"
     google.disk_size = "10" # In GB
 
     # This is much cheaper, but the machine might be killed if they need resources. In that case, we have to (manually) start over.
-    google.preemptible = true
-    google.on_host_maintenance = "TERMINATE"
-    google.auto_restart = false
+    #google.preemptible = true
+    #google.on_host_maintenance = "TERMINATE"
+    #google.auto_restart = false
   end
 
   # -----------------------------------
@@ -326,9 +315,7 @@ Vagrant.configure(2) do |config|
     provision(node, :bootstrap_debian_8)
   end
 
-  # The biicode apt repository doesn't have a biicode .deb file for debian jessie 32bit (that is, also the automated installer provided by them doesn't work, because that uses the apt repository)-
-  # So if we want to support that OS, we'd have to Install biicode there manually (checking out github repositories for biicode/client, biicode/common, and install python dependencies).
-
+#TODO debian 7 should now work because we don't have biicode anymore
   config.vm.define "debian-7-x64" do |node|
     setup_box(node, "debian/wheezy64", "ami-98043785", "debian-7-0-x64", "")
     debian_ssh_setup(node)
