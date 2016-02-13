@@ -47,6 +47,25 @@ def update_cmake(config)
   SHELL
 end
 
+def update_boost(config)
+  config.vm.provision :shell, inline: <<-SHELL
+    set -v
+    whoami
+    pwd
+    # Detect number of CPU cores
+    export NUMCORES=`grep -c ^processor /proc/cpuinfo`
+    echo Using $NUMCORES cores
+    # Install boost
+    wget -O boost.tar.bz2 https://sourceforge.net/projects/boost/files/boost/1.56.0/boost_1_56_0.tar.bz2/download
+    tar -xf boost.tar.bz2
+    cd boost_1_56_0
+    ./bootstrap.sh --with-libraries=filesystem,thread,chrono,program_options
+    ./b2 -d0 -j$NUMCORES install
+    cd ..
+    rm -rf boost.tar.bz2 boost_1_56_0
+  SHELL
+end
+
 def bootstrap_ubuntu_15_10(config)
     config.vm.provision :shell, inline: <<-SHELL
       echo Installing dependencies
@@ -59,45 +78,49 @@ end
 def bootstrap_ubuntu_15_04(config)
     config.vm.provision :shell, inline: <<-SHELL
       echo Installing dependencies
-      DEBIAN_FRONTEND=noninteractive apt-get install -y git dpkg-dev rpm cmake g++ python libcurl4-openssl-dev libfuse-dev libcrypto++-dev libssl-dev libboost-filesystem-dev libboost-program-options-dev libboost-thread-dev
+      DEBIAN_FRONTEND=noninteractive apt-get install -y git dpkg-dev rpm cmake g++ python libcurl4-openssl-dev libfuse-dev libcrypto++-dev libssl-dev
     SHELL
 
     update_cmake(config)
+    update_boost(config)
 end
 
 def bootstrap_ubuntu_14_04(config)
     config.vm.provision :shell, inline: <<-SHELL
       echo Installing dependencies
-      DEBIAN_FRONTEND=noninteractive apt-get install -y git dpkg-dev rpm cmake g++ python libcurl4-openssl-dev software-properties-common libfuse-dev libcrypto++-dev libssl-dev libboost-filesystem-dev libboost-program-options-dev libboost-thread-dev
+      DEBIAN_FRONTEND=noninteractive apt-get install -y git dpkg-dev rpm cmake g++ python libcurl4-openssl-dev software-properties-common libfuse-dev libcrypto++-dev libssl-dev
     SHELL
 
     update_cmake(config)
+    update_boost(config)
 end
 
 def bootstrap_ubuntu_12_04(config)
     config.vm.provision :shell, inline: <<-SHELL
       echo Installing dependencies
-      DEBIAN_FRONTEND=noninteractive apt-get install -y git dpkg-dev rpm python software-properties-common libcurl4-openssl-dev python-software-properties libfuse-dev libssl-dev libcrypto++-dev libboost-filesystem-dev libboost-program-options-dev libboost-thread-dev
+      DEBIAN_FRONTEND=noninteractive apt-get install -y git dpkg-dev rpm python software-properties-common libcurl4-openssl-dev python-software-properties libfuse-dev libssl-dev libcrypto++-dev
     SHELL
 
     update_gcc(config)
     update_cmake(config)
+    update_boost(config)
 end
 
 def bootstrap_debian_8(config)
     # Problem with debian on digital ocean: https://github.com/smdahlen/vagrant-digitalocean/issues/203
     config.vm.provision :shell, inline: <<-SHELL
       echo Installing dependencies
-      DEBIAN_FRONTEND=noninteractive apt-get install -y git dpkg-dev rpm cmake python g++ libcurl4-openssl-dev libfuse-dev fuse libcrypto++-dev libssl-dev libboost-filesystem-dev libboost-program-options-dev libboost-thread-dev
+      DEBIAN_FRONTEND=noninteractive apt-get install -y git dpkg-dev rpm cmake python g++ libcurl4-openssl-dev libfuse-dev fuse libcrypto++-dev libssl-dev
     SHELL
 
     update_cmake(config)
+    update_boost(config)
 end
 
 def bootstrap_debian_7(config)
     config.vm.provision :shell, inline: <<-SHELL
       echo Installing dependencies
-      DEBIAN_FRONTEND=noninteractive apt-get install -y git rpm dpkg-dev software-properties-common python-software-properties libcurl4-openssl-dev libfuse-dev fuse libcrypto++-dev libssl-dev libboost-filesystem-dev libboost-program-options-dev libboost-thread-dev
+      DEBIAN_FRONTEND=noninteractive apt-get install -y git rpm dpkg-dev software-properties-common python-software-properties libcurl4-openssl-dev libfuse-dev fuse libcrypto++-dev libssl-dev
 
       # Update gcc
       echo Updating gcc
@@ -116,6 +139,7 @@ def bootstrap_debian_7(config)
     SHELL
 
     update_cmake(config)
+    update_boost(config)
 end
 
 def setup_swap(config)
