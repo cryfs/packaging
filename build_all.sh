@@ -20,9 +20,10 @@ runbuild ubuntu-15.04-x32 vivid
 runbuild ubuntu-14.04-x64 trusty
 runbuild ubuntu-14.04-x32 trusty
 runbuild ubuntu-12.04-x64 precise
-#runbuild ubuntu-12.04-x32 precise
+runbuild ubuntu-12.04-x32 precise
 
 runbuild debian-8-x64 jessie
+runbuild debian-8-x32 jessie
 
 # Wait until all finished
 wait
