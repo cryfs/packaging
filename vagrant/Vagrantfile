@@ -84,6 +84,31 @@ def update_boost(config)
   SHELL
 end
 
+def update_cryptopp(config)
+  config.vm.provision :shell, inline: <<-SHELL
+    set -e
+    export NUMCORES=`grep -c ^processor /proc/cpuinfo`
+    mkdir cryptopp
+    cd cryptopp
+    wget -O cryptopp.zip https://www.cryptopp.com/cryptopp563.zip
+    if [ $(sha512sum cryptopp.zip | awk '{print $1;}') == "b3b963e87d937aeae03aa41849c23bb03fc0a8e627afddb8aa74bc07edf51949888aaa25cb4888053455524e7c5dd8de1f11e227acfab3a3ea344285b6408ce0" ]; then
+      echo Correct sha512sum
+    else
+      echo Wrong sha512sum
+      sha512sum cryptopp.zip
+      exit 1
+    fi
+    DEBIAN_FRONTEND=noninteractive apt-get install -y unzip
+    unzip cryptopp.zip
+    # Remove -march=native from Makefile
+    #grep -v "CXXFLAGS += -march=native" GNUmakefile > GNUmakefile2
+    #rm GNUmakefile
+    #mv GNUmakefile2 GNUmakefile
+    CXXFLAGS="-O3 -DNDEBUG" make -f GNUmakefile-cross -j$NUMCORES static
+    make install PREFIX=/usr/local
+  SHELL
+end
+
 def bootstrap_ubuntu_15_10(config)
     config.vm.provision :shell, inline: <<-SHELL
       echo Installing dependencies
@@ -116,11 +141,12 @@ end
 def bootstrap_ubuntu_12_04(config)
     config.vm.provision :shell, inline: <<-SHELL
       echo Installing dependencies
-      DEBIAN_FRONTEND=noninteractive apt-get install -y git dpkg-dev rpm python software-properties-common libcurl4-openssl-dev python-software-properties libfuse-dev libssl-dev libcrypto++-dev
+      DEBIAN_FRONTEND=noninteractive apt-get install -y git dpkg-dev rpm python software-properties-common libcurl4-openssl-dev python-software-properties libfuse-dev libssl-dev
     SHELL
 
     update_gcc(config)
     update_cmake(config)
+    update_cryptopp(config)
     update_boost(config)
 end
 
@@ -355,6 +381,12 @@ Vagrant.configure(2) do |config|
 
   config.vm.define "debian-8-x64" do |node|
     setup_box(node, "debian/jessie64", "ami-02b78e1f", "debian-8-x64", "debian-8-jessie-v20151104")
+    debian_ssh_setup(node)
+    provision(node, :bootstrap_debian_8)
+  end
+
+  config.vm.define "debian-8-x32" do |node|
+    setup_box(node, "debian/jessie32", "", "debian-8-x32", "")
     debian_ssh_setup(node)
     provision(node, :bootstrap_debian_8)
   end
