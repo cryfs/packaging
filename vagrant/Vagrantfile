@@ -29,11 +29,14 @@ end
 
 def update_cmake(config)
   config.vm.provision :shell, inline: <<-SHELL
+    set -e
     echo Updating CMake
     if [ "x86_64" == "$(uname -m)" ]; then
       ARCH="x86_64"
+      SHASUM="0c6e1d1dedf58b21f6bd3de9f03ca435c3d13c4e709b1d67432ca12df07d8208"
     else
       ARCH="i386"
+      SHASUM="330b7bc01c6d790a66da08d16cd30b1e0538a32fca148b42fe5fe4be4cd01ca0"
     fi
     if (cat /etc/issue | grep "Ubuntu 12.04"); then
       # the cmake.org certificate is too new for the wget client on Ubuntu 12.04
@@ -43,13 +46,20 @@ def update_cmake(config)
     fi
     wget ${PARAMS} https://cmake.org/files/v3.3/cmake-3.3.2-Linux-${ARCH}.tar.gz
     tar -xf cmake-3.3.2-Linux-${ARCH}.tar.gz
+    if [ $(sha256sum cmake-3.3.2-Linux-${ARCH}.tar.gz | awk '{print $1;}') == "${SHASUM}" ]; then
+      echo Correct sha256sum
+    else
+      echo Wrong sha256sum
+      sha512sum cmake-3.3.2-Linux-${ARCH}.tar.gz
+      exit 1
+    fi
     cp -R cmake-3.3.2-Linux-${ARCH}/* /usr
   SHELL
 end
 
 def update_boost(config)
   config.vm.provision :shell, inline: <<-SHELL
-    set -v
+    set -e
     whoami
     pwd
     # Detect number of CPU cores
@@ -57,6 +67,14 @@ def update_boost(config)
     echo Using $NUMCORES cores
     # Install boost
     wget -O boost.tar.bz2 https://sourceforge.net/projects/boost/files/boost/1.56.0/boost_1_56_0.tar.bz2/download
+    if [ $(sha512sum boost.tar.bz2 | awk '{print $1;}') == "1ce9871c3a2519682538a5f1331938b948123432d99aea0ce026958cbebd25d84019a3a28c452724b9693df98a8d1264bb2d93d2fee508453f8b42836e67481e" ]; then
+      echo Correct sha512sum
+    else
+      echo Wrong sha512sum
+      sha512sum boost.tar.bz2
+      exit 1
+    fi
+    echo Extracting...
     tar -xf boost.tar.bz2
     cd boost_1_56_0
     ./bootstrap.sh --with-libraries=filesystem,thread,chrono,program_options
