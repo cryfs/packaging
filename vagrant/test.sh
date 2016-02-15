@@ -24,14 +24,15 @@ git checkout $TAG
 
 mkdir build
 cd build
-cmake .. -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=on
+# Travis CI tests in debug mode, so we test in release mode.
+cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=on
 make -j$NUMCORES
 
-./test/cpp-utils/cpp-utils-test --gtest_also_run_disabled_tests
-./test/parallelaccessstore/parallelaccessstore-test --gtest_also_run_disabled_tests
-./test/blockstore/blockstore-test --gtest_also_run_disabled_tests
-./test/blobstore/blobstore-test --gtest_also_run_disabled_tests
-./test/fspp/fspp-test --gtest_also_run_disabled_tests
+./test/cpp-utils/cpp-utils-test --gtest_also_run_disabled_tests && \
+./test/parallelaccessstore/parallelaccessstore-test --gtest_also_run_disabled_tests && \
+./test/blockstore/blockstore-test --gtest_also_run_disabled_tests && \
+./test/blobstore/blobstore-test --gtest_also_run_disabled_tests && \
+./test/fspp/fspp-test --gtest_also_run_disabled_tests && \
 ./test/cryfs/cryfs-test --gtest_also_run_disabled_tests
 
 cd /
