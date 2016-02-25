@@ -33,7 +33,9 @@ make -j$NUMCORES
 ./test/blockstore/blockstore-test --gtest_also_run_disabled_tests && \
 ./test/blobstore/blobstore-test --gtest_also_run_disabled_tests && \
 ./test/fspp/fspp-test --gtest_also_run_disabled_tests && \
-./test/cryfs/cryfs-test --gtest_also_run_disabled_tests
+./test/cryfs/impl/cryfs-impl-test --gtest_also_run_disabled_tests
+./test/cryfs/lib_usage_test/cryfs-lib-usage-test
+./test/cryfs/cryfs-cli-test --gtest_also_run_disabled_tests
 
 cd /
 #sudo umount $TMPDIR
