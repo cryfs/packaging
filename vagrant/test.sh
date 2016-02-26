@@ -35,6 +35,7 @@ make -j$NUMCORES
 ./test/fspp/fspp-test --gtest_also_run_disabled_tests && \
 ./test/cryfs/impl/cryfs-impl-test --gtest_also_run_disabled_tests
 ./test/cryfs/lib_usage_test/cryfs-lib-usage-test
+./test/cryfs/lib_usage_test_cpp/cryfs-lib-usage-test-cpp
 ./test/cryfs/cryfs-cli-test --gtest_also_run_disabled_tests
 
 cd /
