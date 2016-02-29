@@ -100,11 +100,7 @@ def update_cryptopp(config)
     fi
     DEBIAN_FRONTEND=noninteractive apt-get install -y unzip
     unzip cryptopp.zip
-    # Remove -march=native from Makefile
-    #grep -v "CXXFLAGS += -march=native" GNUmakefile > GNUmakefile2
-    #rm GNUmakefile
-    #mv GNUmakefile2 GNUmakefile
-    CXXFLAGS="-O3 -DNDEBUG" make -f GNUmakefile-cross -j$NUMCORES static
+    CXXFLAGS="-O3 -DNDEBUG -fPIC" make -f GNUmakefile-cross -j$NUMCORES static
     make install PREFIX=/usr/local
   SHELL
 end
