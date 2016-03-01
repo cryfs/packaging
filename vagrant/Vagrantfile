@@ -78,7 +78,7 @@ def update_boost(config)
     tar -xf boost.tar.bz2
     cd boost_1_56_0
     ./bootstrap.sh --with-libraries=filesystem,thread,chrono,program_options
-    ./b2 -d0 -j$NUMCORES install
+    ./b2 link=static -d0 -j$NUMCORES install
     cd ..
     rm -rf boost.tar.bz2 boost_1_56_0
   SHELL
