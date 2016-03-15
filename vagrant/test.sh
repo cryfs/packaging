@@ -28,6 +28,7 @@ cd build
 cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=on
 make -j$NUMCORES
 
+./test/gitversion/gitversion-test --gtest_also_run_disabled_tests && \
 ./test/cpp-utils/cpp-utils-test --gtest_also_run_disabled_tests && \
 ./test/parallelaccessstore/parallelaccessstore-test --gtest_also_run_disabled_tests && \
 ./test/blockstore/blockstore-test --gtest_also_run_disabled_tests && \
