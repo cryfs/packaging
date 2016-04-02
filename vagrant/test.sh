@@ -35,7 +35,7 @@ make -j$NUMCORES
 ./test/blobstore/blobstore-test --gtest_also_run_disabled_tests
 ./test/fspp/fspp-test --gtest_also_run_disabled_tests
 ./test/cryfs/cryfs-test --gtest_also_run_disabled_tests
-./test/cryfs/cryfs-cli-test --gtest_also_run_disabled_tests
+./test/cryfs-cli/cryfs-cli-test --gtest_also_run_disabled_tests
 
 # TODO When merging library branch, add these test cases and (probably) remove cryfs-test
 #./test/cryfs/lib_usage_test/cryfs-lib-usage-test --gtest_also_run_disabled_tests
