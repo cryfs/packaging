@@ -13,6 +13,8 @@ function runbuild {
   ./build.sh $1 $TAG $2 > build/build-$1.stdout 2> build/build-$1.stderr &
 }
 
+runbuild ubuntu-16.04-x64 xenial
+runbuild ubuntu-16.04-x32 xenial
 runbuild ubuntu-15.10-x64 wily
 runbuild ubuntu-15.10-x32 wily
 runbuild ubuntu-15.04-x64 vivid

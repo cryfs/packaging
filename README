@@ -1,3 +1,6 @@
+Install:
+ - Install vagrant and plugins: vagrant-vbguest, vagrant-digitalocean, vagrant-google (or vagrant-gce?)
+
 Set environment variables:
  - Digital Ocean: DO_TOKEN
  - Amazon EC2: AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY
