@@ -11,6 +11,8 @@ DEB_DIRECTORY=$3
 
 CONTAINER_NAME=cryfs-aptly
 
+GPG_TMPDIR=/tmp/gpgdir-`cat /dev/urandom | tr -cd 'a-f0-9' | head -c 8`
+
 set -e
 
 # Switch to directory of script
@@ -35,14 +37,14 @@ fi
 
 # Copy gpg-homedir to /tmp/gpg-homedir (needed in case the homedir is stored in cryfs)
 function cleanup {
-  rm  -rf /tmp/gpg-homedir
+  rm  -rf $GPG_TMPDIR
 }
 trap cleanup EXIT
-rm -rf /tmp/gpg-homedir
-cp -R $GPG_HOMEDIR /tmp/gpg-homedir
+rm -rf $GPG_TMPDIR
+cp -R $GPG_HOMEDIR $GPG_TMPDIR
 
 ./build.sh
-docker run -ti -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY -v "$DEB_DIRECTORY:/debfiles" -v "/tmp/gpg-homedir:/root/.gnupg" cryfs/aptly create_repository.sh $OS $OS_DISTRIBUTION /debfiles
+docker run -ti -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY -v "$DEB_DIRECTORY:/debfiles" -v "$GPG_TMPDIR:/root/.gnupg" cryfs/aptly create_repository.sh $OS $OS_DISTRIBUTION /debfiles
 
 set +e
 
