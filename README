@@ -1,5 +1,5 @@
 Install:
- - Install vagrant and plugins: vagrant-vbguest, vagrant-digitalocean, vagrant-google (or vagrant-gce?)
+ - Install vagrant and plugins: vagrant-vbguest, vagrant-digitalocean, vagrant-google
 
 Set environment variables:
  - Digital Ocean: DO_TOKEN

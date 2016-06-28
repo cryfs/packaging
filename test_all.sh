@@ -17,8 +17,6 @@ runtest ubuntu-16.04-x64
 runtest ubuntu-16.04-x32
 runtest ubuntu-15.10-x64
 runtest ubuntu-15.10-x32
-runtest ubuntu-15.04-x64
-runtest ubuntu-15.04-x32
 runtest ubuntu-14.04-x64
 runtest ubuntu-14.04-x32
 runtest ubuntu-12.04-x64
