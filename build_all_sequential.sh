@@ -17,8 +17,6 @@ function runbuild {
 
 runbuild ubuntu-16.04-x64 xenial
 runbuild ubuntu-16.04-x32 xenial
-runbuild ubuntu-15.10-x64 wily
-runbuild ubuntu-15.10-x32 wily
 runbuild ubuntu-14.04-x64 trusty
 runbuild ubuntu-14.04-x32 trusty
 runbuild ubuntu-12.04-x64 precise

@@ -105,6 +105,16 @@ def update_cryptopp(config)
   SHELL
 end
 
+def bootstrap_ubuntu_16_10(config)
+    config.vm.provision :shell, inline: <<-SHELL
+      echo Fixing hostname
+      echo "127.0.0.1 ubuntu-yakkety" >> /etc/hosts
+
+      echo Installing dependencies
+      DEBIAN_FRONTEND=noninteractive apt-get install -y git dpkg-dev rpm cmake g++ python libcurl4-openssl-dev libfuse-dev libcrypto++-dev libssl-dev libboost-filesystem-dev libboost-program-options-dev libboost-thread-dev
+    SHELL
+end
+
 def bootstrap_ubuntu_16_04(config)
     config.vm.provision :shell, inline: <<-SHELL
       echo Fixing hostname
@@ -297,6 +307,16 @@ def debian_ssh_setup(config)
   end
 end
 
+class Ubuntu1610VbguestInstaller < VagrantVbguest::Installers::Linux
+  def install(opts=nil, &block)
+    communicate.sudo('apt-get install -y linux-headers-4.8.0', opts, &block)
+    # calling `super` will run the installation
+    # also it takes care of uploading the right iso file into the box
+    # and cleaning up afterward
+    super
+  end
+end
+
 Vagrant.configure(2) do |config|
   config.vm.provider :virtualbox do |v|
     v.memory = 8192
@@ -317,14 +337,14 @@ Vagrant.configure(2) do |config|
   config.vm.provider :digital_ocean do |provider, override|
     provider.token = "#{ENV['DO_TOKEN']}"
     provider.region = "fra1"
-    provider.size = "4gb"
+    provider.size = "64gb"
   end
 
   config.vm.provider :google do |google, override|
     google.google_project_id = "cryfs-1156"
     google.google_client_email = "sebmessmer@gmail.com"
     google.google_json_key_location = "#{ENV['GOOGLE_JSON_KEY']}"
-    google.machine_type = "n1-highcpu-4"
+    google.machine_type = "n1-highcpu-32"
     google.disk_size = "10" # In GB
 
     # This is much cheaper, but the machine might be killed if they need resources. In that case, we have to (manually) start over.
@@ -336,6 +356,20 @@ Vagrant.configure(2) do |config|
   # -----------------------------------
   # Machines for building .deb packages
   # -----------------------------------
+
+  config.vm.define "ubuntu-16.10-x64" do |node|
+    setup_box(node, "ubuntu/yakkety64", "", "ubuntu-16-10-x64", "")
+    ubuntu_ssh_setup(node)
+    provision(node, :bootstrap_ubuntu_16_10)
+    node.vbguest.installer = Ubuntu1610VbguestInstaller
+  end
+
+  config.vm.define "ubuntu-16.10-x32" do |node|
+    setup_box(node, "ubuntu/yakkety64", "", "ubuntu-16-10-x32", "")
+    ubuntu_ssh_setup(node)
+    provision(node, :bootstrap_ubuntu_16_10)
+    node.vbguest.installer = Ubuntu1610VbguestInstaller
+  end
 
   config.vm.define "ubuntu-16.04-x64" do |node|
     setup_box(node, "ubuntu/xenial64", "ami-1df31172", "ubuntu-16-04-x64", "ubuntu-1604-xenial-v20160429")
