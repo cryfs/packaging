@@ -233,21 +233,21 @@ def provision(config, provisioner)
     end
     config.vm.provider :aws do |aws, override|
       init(override)
-      setup_swap(override)
+      #setup_swap(override)
       update_system(override)
       self.send(provisioner, override)
       finish(override)
     end
     config.vm.provider :digital_ocean do |digitalocean, override|
       init(override)
-      setup_swap(override)
+      #setup_swap(override)
       update_system(override)
       self.send(provisioner, override)
       finish(override)
     end
     config.vm.provider :google do |google, override|
       init(override)
-      setup_swap(override)
+      #setup_swap(override)
       update_system(override)
       self.send(provisioner, override)
       finish(override)
