@@ -533,6 +533,11 @@ Vagrant.configure(2) do |config|
     debian_ssh_setup(node)
   end
 
+  config.vm.define "debian-8-x32-test" do |node|
+    setup_box(node, "debian/jessie32", "", "debian-8-x32", "")
+    debian_ssh_setup(node)
+  end
+
   config.vm.define "debian-7-x64-test" do |node|
     setup_box(node, "debian/wheezy64", "ami-98043785", "debian-7-0-x64", "")
     debian_ssh_setup(node)
