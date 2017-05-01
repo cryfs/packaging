@@ -15,6 +15,8 @@ function runbuild {
   cd vagrant ; vagrant halt $1 ; cd ..
 }
 
+runbuild ubuntu-17.04-x64 zesty
+runbuild ubuntu-17.04-x32 zesty
 runbuild ubuntu-16.10-x64 yakkety
 runbuild ubuntu-16.10-x32 yakkety
 runbuild ubuntu-16.04-x64 xenial

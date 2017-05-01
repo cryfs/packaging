@@ -7,6 +7,7 @@ set -e
 # Switch to directory of script
 cd ${0%/*}
 
+./create_repository.sh ubuntu zesty $(pwd)/../build/zesty
 ./create_repository.sh ubuntu yakkety $(pwd)/../build/yakkety
 ./create_repository.sh ubuntu xenial $(pwd)/../build/xenial
 ./create_repository.sh ubuntu trusty $(pwd)/../build/trusty

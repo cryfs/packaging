@@ -13,6 +13,8 @@ function runtest {
   ./test.sh $1 $TAG > build/test-$1.stdout 2> build/test-$1.stderr &
 }
 
+runtest ubuntu-17.04-x64
+runtest ubuntu-17.04-x32
 runtest ubuntu-16.10-x64
 runtest ubuntu-16.10-x32
 runtest ubuntu-16.04-x64

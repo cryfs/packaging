@@ -105,6 +105,16 @@ def update_cryptopp(config)
   SHELL
 end
 
+def bootstrap_ubuntu_17_04(config)
+    config.vm.provision :shell, inline: <<-SHELL
+      echo Fixing hostname
+      echo "127.0.0.1 ubuntu-zesty" >> /etc/hosts
+
+      echo Installing dependencies
+      DEBIAN_FRONTEND=noninteractive apt-get install -y git dpkg-dev rpm cmake g++ python libcurl4-openssl-dev libfuse-dev libcrypto++-dev libssl-dev libboost-filesystem-dev libboost-program-options-dev libboost-thread-dev
+    SHELL
+end
+
 def bootstrap_ubuntu_16_10(config)
     config.vm.provision :shell, inline: <<-SHELL
       echo Fixing hostname
@@ -356,6 +366,20 @@ Vagrant.configure(2) do |config|
   # -----------------------------------
   # Machines for building .deb packages
   # -----------------------------------
+
+  config.vm.define "ubuntu-17.04-x64" do |node|
+    setup_box(node, "ubuntu/zesty64", "", "ubuntu-17-04-x64", "")
+    ubuntu_ssh_setup(node)
+    provision(node, :bootstrap_ubuntu_17_04)
+    node.vbguest.installer = VagrantVbguest::Installers::Ubuntu
+  end
+
+  config.vm.define "ubuntu-17.04-x32" do |node|
+    setup_box(node, "ubuntu/zesty32", "", "ubuntu-17-04-x32", "")
+    ubuntu_ssh_setup(node)
+    provision(node, :bootstrap_ubuntu_17_04)
+    node.vbguest.installer = VagrantVbguest::Installers::Ubuntu
+  end
 
   config.vm.define "ubuntu-16.10-x64" do |node|
     setup_box(node, "ubuntu/yakkety64", "", "ubuntu-16-10-x64", "")

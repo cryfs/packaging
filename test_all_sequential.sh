@@ -15,6 +15,8 @@ function runtest {
   cd vagrant ; vagrant halt $1 ; cd ..
 }
 
+runtest ubuntu-17.04-x64
+runtest ubuntu-17.04-x32
 runtest ubuntu-16.10-x64
 runtest ubuntu-16.10-x32
 runtest ubuntu-16.04-x64
