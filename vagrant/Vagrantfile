@@ -1,3 +1,38 @@
+# Old routines not needed anymore are commented out
+#
+#def update_gcc(config)
+#  # Run build one time, so the boost libraries are downloaded and compiled (we don't want that to happen on each call)
+#  config.vm.provision :shell, inline: <<-SHELL
+#    echo Updatíng GCC
+#    DEBIAN_FRONTEND=noninteractive add-apt-repository ppa:ubuntu-toolchain-r/test -y && \
+#    DEBIAN_FRONTEND=noninteractive apt-get update -qq && \
+#    DEBIAN_FRONTEND=noninteractive apt-get install -y g++-4.8 gcc-4.8 cmake make && \
+#    DEBIAN_FRONTEND=noninteractive update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 90 && \
+#    DEBIAN_FRONTEND=noninteractive update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.8 90
+#  SHELL
+#end
+#
+#def update_cryptopp(config)
+#  config.vm.provision :shell, inline: <<-SHELL
+#    set -e
+#    export NUMCORES=`grep -c ^processor /proc/cpuinfo`
+#    mkdir cryptopp
+#    cd cryptopp
+#    wget -O cryptopp.zip https://www.cryptopp.com/cryptopp563.zip
+#    if [ $(sha512sum cryptopp.zip | awk '{print $1;}') == "b3b963e87d937aeae03aa41849c23bb03fc0a8e627afddb8aa74bc07edf51949888aaa25cb4888053455524e7c5dd8de1f11e227acfab3a3ea344285b6408ce0" ]; then
+#      echo Correct sha512sum
+#    else
+#      echo Wrong sha512sum
+#      sha512sum cryptopp.zip
+#      exit 1
+#    fi
+#    DEBIAN_FRONTEND=noninteractive apt-get install -y unzip
+#    unzip cryptopp.zip
+#    CXXFLAGS="-O3 -DNDEBUG -fPIC" make -f GNUmakefile-cross -j$NUMCORES static
+#    make install PREFIX=/usr/local
+#  SHELL
+#end
+
 def init(config)
   # Add system user
   config.vm.provision :shell, inline: <<-SHELL
@@ -12,18 +47,6 @@ def update_system(config)
     DEBIAN_FRONTEND=noninteractive apt-get update -qq && \
     DEBIAN_FRONTEND=noninteractive apt-get -y upgrade && \
     DEBIAN_FRONTEND=noninteractive apt-get -y dist-upgrade
-  SHELL
-end
-
-def update_gcc(config)
-  # Run build one time, so the boost libraries are downloaded and compiled (we don't want that to happen on each call)
-  config.vm.provision :shell, inline: <<-SHELL
-    echo Updatíng GCC
-    DEBIAN_FRONTEND=noninteractive add-apt-repository ppa:ubuntu-toolchain-r/test -y && \
-    DEBIAN_FRONTEND=noninteractive apt-get update -qq && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y g++-4.8 gcc-4.8 cmake make && \
-    DEBIAN_FRONTEND=noninteractive update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 90 && \
-    DEBIAN_FRONTEND=noninteractive update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.8 90 
   SHELL
 end
 
@@ -84,41 +107,20 @@ def update_boost(config)
   SHELL
 end
 
-def update_cryptopp(config)
-  config.vm.provision :shell, inline: <<-SHELL
-    set -e
-    export NUMCORES=`grep -c ^processor /proc/cpuinfo`
-    mkdir cryptopp
-    cd cryptopp
-    wget -O cryptopp.zip https://www.cryptopp.com/cryptopp563.zip
-    if [ $(sha512sum cryptopp.zip | awk '{print $1;}') == "b3b963e87d937aeae03aa41849c23bb03fc0a8e627afddb8aa74bc07edf51949888aaa25cb4888053455524e7c5dd8de1f11e227acfab3a3ea344285b6408ce0" ]; then
-      echo Correct sha512sum
-    else
-      echo Wrong sha512sum
-      sha512sum cryptopp.zip
-      exit 1
-    fi
-    DEBIAN_FRONTEND=noninteractive apt-get install -y unzip
-    unzip cryptopp.zip
-    CXXFLAGS="-O3 -DNDEBUG -fPIC" make -f GNUmakefile-cross -j$NUMCORES static
-    make install PREFIX=/usr/local
-  SHELL
-end
-
-def bootstrap_ubuntu_17_04(config)
+def bootstrap_ubuntu_17_10(config)
     config.vm.provision :shell, inline: <<-SHELL
       echo Fixing hostname
-      echo "127.0.0.1 ubuntu-zesty" >> /etc/hosts
+      echo "127.0.0.1 ubuntu-artful" >> /etc/hosts
 
       echo Installing dependencies
       DEBIAN_FRONTEND=noninteractive apt-get install -y git dpkg-dev rpm cmake g++ python libcurl4-openssl-dev libfuse-dev libcrypto++-dev libssl-dev libboost-filesystem-dev libboost-program-options-dev libboost-thread-dev
     SHELL
 end
 
-def bootstrap_ubuntu_16_10(config)
+def bootstrap_ubuntu_17_04(config)
     config.vm.provision :shell, inline: <<-SHELL
       echo Fixing hostname
-      echo "127.0.0.1 ubuntu-yakkety" >> /etc/hosts
+      echo "127.0.0.1 ubuntu-zesty" >> /etc/hosts
 
       echo Installing dependencies
       DEBIAN_FRONTEND=noninteractive apt-get install -y git dpkg-dev rpm cmake g++ python libcurl4-openssl-dev libfuse-dev libcrypto++-dev libssl-dev libboost-filesystem-dev libboost-program-options-dev libboost-thread-dev
@@ -135,25 +137,6 @@ def bootstrap_ubuntu_16_04(config)
     SHELL
 end
 
-def bootstrap_ubuntu_15_10(config)
-    config.vm.provision :shell, inline: <<-SHELL
-      echo Installing dependencies
-      DEBIAN_FRONTEND=noninteractive apt-get install -y git dpkg-dev rpm cmake g++ python libcurl4-openssl-dev libfuse-dev libcrypto++-dev libssl-dev libboost-filesystem-dev libboost-program-options-dev libboost-thread-dev
-    SHELL
-
-    update_cmake(config)
-end
-
-def bootstrap_ubuntu_15_04(config)
-    config.vm.provision :shell, inline: <<-SHELL
-      echo Installing dependencies
-      DEBIAN_FRONTEND=noninteractive apt-get install -y git dpkg-dev rpm cmake g++ python libcurl4-openssl-dev libfuse-dev libcrypto++-dev libssl-dev
-    SHELL
-
-    update_cmake(config)
-    update_boost(config)
-end
-
 def bootstrap_ubuntu_14_04(config)
     config.vm.provision :shell, inline: <<-SHELL
       echo Installing dependencies
@@ -164,16 +147,12 @@ def bootstrap_ubuntu_14_04(config)
     update_boost(config)
 end
 
-def bootstrap_ubuntu_12_04(config)
+def bootstrap_debian_9(config)
+    # Problem with debian on digital ocean: https://github.com/smdahlen/vagrant-digitalocean/issues/203
     config.vm.provision :shell, inline: <<-SHELL
       echo Installing dependencies
-      DEBIAN_FRONTEND=noninteractive apt-get install -y git dpkg-dev rpm python software-properties-common libcurl4-openssl-dev python-software-properties libfuse-dev libssl-dev
+      DEBIAN_FRONTEND=noninteractive apt-get install -y git dpkg-dev rpm cmake python g++ libcurl4-openssl-dev libfuse-dev fuse libcrypto++-dev libssl-dev libboost-filesystem-dev libboost-program-options-dev libboost-thread-dev
     SHELL
-
-    update_gcc(config)
-    update_cmake(config)
-    update_cryptopp(config)
-    update_boost(config)
 end
 
 def bootstrap_debian_8(config)
@@ -187,46 +166,21 @@ def bootstrap_debian_8(config)
     update_boost(config)
 end
 
-def bootstrap_debian_7(config)
-    config.vm.provision :shell, inline: <<-SHELL
-      echo Installing dependencies
-      DEBIAN_FRONTEND=noninteractive apt-get install -y git rpm dpkg-dev software-properties-common python-software-properties libcurl4-openssl-dev libfuse-dev fuse libcrypto++-dev libssl-dev
-
-      # Update gcc
-      echo Updating gcc
-      printf "deb http://ftp.uk.debian.org/debian/ jessie main non-free contrib" > /etc/apt/sources.list.d/gcc.list && \
-      printf "Package: *\nPin: release a=wheezy\nPin-Priority: 900\n\nPackage: gcc*\nPin: release a=jessie\nPin-Priority: 910\n" > /etc/apt/preferences && \
-      DEBIAN_FRONTEND=noninteractive apt-get update -qq && \
-      DEBIAN_FRONTEND=noninteractive apt-get install -y g++-4.8 && \
-      DEBIAN_FRONTEND=noninteractive update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 90 && \
-      DEBIAN_FRONTEND=noninteractive update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.8 90 
-
-      # Fix fuse permissions
-      echo Fixing fuse permissions
-      #chmod g+rw /dev/fuse
-      #chgrp fuse /dev/fuse
-      gpasswd -a builder fuse
-    SHELL
-
-    update_cmake(config)
-    update_boost(config)
-end
-
-def setup_swap(config)
-    # Add swap space to make it work with low RAM
-    config.vm.provision :shell, inline: <<-SHELL
-      echo Setup swap storage
-      fallocate -l 4G /swapfile
-      chmod 600 /swapfile
-      mkswap /swapfile
-      printf "/swapfile none swap sw 0 0" >> /etc/fstab
-      swapon -a
-      sysctl vm.swappiness=10
-      printf "vm.swappiness=10\n" >> /etc/sysctl.conf
-      sysctl vm.vfs_cache_pressure=50
-      printf "vm.vfs_cache_pressure=50\n" >> /etc/sysctl.conf
-    SHELL
-end
+#def setup_swap(config)
+#    # Add swap space to make it work with low RAM
+#    config.vm.provision :shell, inline: <<-SHELL
+#      echo Setup swap storage
+#      fallocate -l 4G /swapfile
+#      chmod 600 /swapfile
+#      mkswap /swapfile
+#      printf "/swapfile none swap sw 0 0" >> /etc/fstab
+#      swapon -a
+#      sysctl vm.swappiness=10
+#      printf "vm.swappiness=10\n" >> /etc/sysctl.conf
+#      sysctl vm.vfs_cache_pressure=50
+#      printf "vm.vfs_cache_pressure=50\n" >> /etc/sysctl.conf
+#    SHELL
+#end
 
 def finish(config)
   config.vm.provision :shell, inline: <<-SHELL
@@ -317,16 +271,6 @@ def debian_ssh_setup(config)
   end
 end
 
-class Ubuntu1610VbguestInstaller < VagrantVbguest::Installers::Linux
-  def install(opts=nil, &block)
-    communicate.sudo('apt-get install -y linux-headers-4.8.0', opts, &block)
-    # calling `super` will run the installation
-    # also it takes care of uploading the right iso file into the box
-    # and cleaning up afterward
-    super
-  end
-end
-
 Vagrant.configure(2) do |config|
   config.vm.provider :virtualbox do |v|
     v.memory = 8192
@@ -341,7 +285,7 @@ Vagrant.configure(2) do |config|
     aws.region = "eu-central-1"
     aws.keypair_name="vagrant-ec2"
     aws.security_groups=["ssh-only"]
-    aws.instance_type = "t2.micro"
+    aws.instance_type = "m4.4xlarge"
   end
 
   config.vm.provider :digital_ocean do |provider, override|
@@ -367,8 +311,22 @@ Vagrant.configure(2) do |config|
   # Machines for building .deb packages
   # -----------------------------------
 
+  config.vm.define "ubuntu-17.10-x64" do |node|
+    setup_box(node, "ubuntu/artful64", "ami-c041d3af", "ubuntu-17-10-x64", "")
+    ubuntu_ssh_setup(node)
+    provision(node, :bootstrap_ubuntu_17_10)
+    node.vbguest.installer = VagrantVbguest::Installers::Ubuntu
+  end
+
+  config.vm.define "ubuntu-17.10-x32" do |node|
+    setup_box(node, "ubuntu/artful32", "", "ubuntu-17-10-x32", "")
+    ubuntu_ssh_setup(node)
+    provision(node, :bootstrap_ubuntu_17_10)
+    node.vbguest.installer = VagrantVbguest::Installers::Ubuntu
+  end
+
   config.vm.define "ubuntu-17.04-x64" do |node|
-    setup_box(node, "ubuntu/zesty64", "", "ubuntu-17-04-x64", "")
+    setup_box(node, "ubuntu/zesty64", "ami-daba31b5", "ubuntu-17-04-x64", "ubuntu-1704")
     ubuntu_ssh_setup(node)
     provision(node, :bootstrap_ubuntu_17_04)
     node.vbguest.installer = VagrantVbguest::Installers::Ubuntu
@@ -379,20 +337,6 @@ Vagrant.configure(2) do |config|
     ubuntu_ssh_setup(node)
     provision(node, :bootstrap_ubuntu_17_04)
     node.vbguest.installer = VagrantVbguest::Installers::Ubuntu
-  end
-
-  config.vm.define "ubuntu-16.10-x64" do |node|
-    setup_box(node, "ubuntu/yakkety64", "", "ubuntu-16-10-x64", "")
-    ubuntu_ssh_setup(node)
-    provision(node, :bootstrap_ubuntu_16_10)
-    node.vbguest.installer = Ubuntu1610VbguestInstaller
-  end
-
-  config.vm.define "ubuntu-16.10-x32" do |node|
-    setup_box(node, "ubuntu/yakkety32", "", "ubuntu-16-10-x32", "")
-    ubuntu_ssh_setup(node)
-    provision(node, :bootstrap_ubuntu_16_10)
-    node.vbguest.installer = Ubuntu1610VbguestInstaller
   end
 
   config.vm.define "ubuntu-16.04-x64" do |node|
@@ -407,30 +351,6 @@ Vagrant.configure(2) do |config|
     provision(node, :bootstrap_ubuntu_16_04)
   end
 
-  config.vm.define "ubuntu-15.10-x64" do |node|
-    setup_box(node, "ubuntu/wily64", "ami-ab0210c7", "ubuntu-15-10-x64", "ubuntu-1510-wily-v20151114")
-    ubuntu_ssh_setup(node)
-    provision(node, :bootstrap_ubuntu_15_10)
-  end
-
-  config.vm.define "ubuntu-15.10-x32" do |node|
-    setup_box(node, "ubuntu/wily32", "", "ubuntu-15-10-x32", "")
-    ubuntu_ssh_setup(node)
-    provision(node, :bootstrap_ubuntu_15_10)
-  end
-
-  config.vm.define "ubuntu-15.04-x64" do |node|
-    setup_box(node, "ubuntu/vivid64", "ami-900517fc", "ubuntu-15-04-x64", "ubuntu-1504-vivid-v20151120")
-    ubuntu_ssh_setup(node)
-    provision(node, :bootstrap_ubuntu_15_04)
-  end
-
-  config.vm.define "ubuntu-15.04-x32" do |node|
-    setup_box(node, "ubuntu/vivid32", "", "ubuntu-15-04-x32", "")
-    ubuntu_ssh_setup(node)
-    provision(node, :bootstrap_ubuntu_15_04)
-  end
-
   config.vm.define "ubuntu-14.04-x64" do |node|
     setup_box(node, "ubuntu/trusty64", "ami-02392b6e", "ubuntu-14-04-x64", "ubuntu-1404-trusty-v20151113")
     ubuntu_ssh_setup(node)
@@ -443,16 +363,16 @@ Vagrant.configure(2) do |config|
     provision(node, :bootstrap_ubuntu_14_04)
   end
 
-  config.vm.define "ubuntu-12.04-x64" do |node|
-    setup_box(node, "ubuntu/precise64", "ami-fa041696", "ubuntu-12-04-x64", "ubuntu-1204-precise-v20151119")
-    ubuntu_ssh_setup(node)
-    provision(node, :bootstrap_ubuntu_12_04)
+  config.vm.define "debian-9-x64" do |node|
+    setup_box(node, "debian/stretch64", "", "debian-9-x64", "")
+    debian_ssh_setup(node)
+    provision(node, :bootstrap_debian_9)
   end
 
-  config.vm.define "ubuntu-12.04-x32" do |node|
-    setup_box(node, "ubuntu/precise32", "", "ubuntu-12-04-x32", "")
-    ubuntu_ssh_setup(node)
-    provision(node, :bootstrap_ubuntu_12_04)
+  config.vm.define "debian-9-x32" do |node|
+    setup_box(node, "debian/stretch32", "", "debian-9-x32", "")
+    debian_ssh_setup(node)
+    provision(node, :bootstrap_debian_9)
   end
 
   config.vm.define "debian-8-x64" do |node|
@@ -465,13 +385,6 @@ Vagrant.configure(2) do |config|
     setup_box(node, "debian/jessie32", "", "debian-8-x32", "")
     debian_ssh_setup(node)
     provision(node, :bootstrap_debian_8)
-  end
-
-#TODO debian 7 should now work because we don't have biicode anymore
-  config.vm.define "debian-7-x64" do |node|
-    setup_box(node, "debian/wheezy64", "ami-98043785", "debian-7-0-x64", "")
-    debian_ssh_setup(node)
-    provision(node, :bootstrap_debian_7)
   end
 
   #config.vm.define "fedora-23-x64" do |node|
@@ -490,16 +403,28 @@ Vagrant.configure(2) do |config|
   # Machines for testing .deb packages
   # ----------------------------------
 
-  config.vm.define "ubuntu-16.10-x64-test" do |node|
-    setup_box(node, "ubuntu/yakkety64", "", "ubuntu-16-10-x64", "")
+  config.vm.define "ubuntu-17.10-x64-test" do |node|
+    setup_box(node, "ubuntu/artful64", "", "ubuntu-17-10-x64", "")
     ubuntu_ssh_setup(node)
-    node.vbguest.installer = Ubuntu1610VbguestInstaller
+    node.vbguest.installer = VagrantVbguest::Installers::Ubuntu
   end
 
-  config.vm.define "ubuntu-16.10-x32-test" do |node|
-    setup_box(node, "ubuntu/yakkety32", "", "ubuntu-16-10-x32", "")
+  config.vm.define "ubuntu-17.10-x32-test" do |node|
+    setup_box(node, "ubuntu/artful32", "", "ubuntu-17-10-x32", "")
     ubuntu_ssh_setup(node)
-    node.vbguest.installer = Ubuntu1610VbguestInstaller
+    node.vbguest.installer = VagrantVbguest::Installers::Ubuntu
+  end
+
+  config.vm.define "ubuntu-17.04-x64-test" do |node|
+    setup_box(node, "ubuntu/zesty64", "", "ubuntu-17-04-x64", "")
+    ubuntu_ssh_setup(node)
+    node.vbguest.installer = VagrantVbguest::Installers::Ubuntu
+  end
+
+  config.vm.define "ubuntu-17.04-x32-test" do |node|
+    setup_box(node, "ubuntu/zesty32", "", "ubuntu-17-04-x32", "")
+    ubuntu_ssh_setup(node)
+    node.vbguest.installer = VagrantVbguest::Installers::Ubuntu
   end
 
   config.vm.define "ubuntu-16.04-x64-test" do |node|
@@ -509,26 +434,6 @@ Vagrant.configure(2) do |config|
 
   config.vm.define "ubuntu-16.04-x32-test" do |node|
     setup_box(node, "ubuntu/xenial32", "", "ubuntu-16-04-x32", "")
-    ubuntu_ssh_setup(node)
-  end
-
-  config.vm.define "ubuntu-15.10-x64-test" do |node|
-    setup_box(node, "ubuntu/wily64", "ami-ab0210c7", "ubuntu-15-10-x64", "ubuntu-1510-wily-v20151114")
-    ubuntu_ssh_setup(node)
-  end
-
-  config.vm.define "ubuntu-15.10-x32-test" do |node|
-    setup_box(node, "ubuntu/wily32", "", "ubuntu-15-10-x32", "")
-    ubuntu_ssh_setup(node)
-  end
-
-  config.vm.define "ubuntu-15.04-x64-test" do |node|
-    setup_box(node, "ubuntu/vivid64", "ami-900517fc", "ubuntu-15-04-x64", "ubuntu-1504-vivid-v20151120")
-    ubuntu_ssh_setup(node)
-  end
-
-  config.vm.define "ubuntu-15.04-x32-test" do |node|
-    setup_box(node, "ubuntu/vivid32", "", "ubuntu-15-04-x32", "")
     ubuntu_ssh_setup(node)
   end
 
@@ -542,14 +447,14 @@ Vagrant.configure(2) do |config|
     ubuntu_ssh_setup(node)
   end
 
-  config.vm.define "ubuntu-12.04-x64-test" do |node|
-    setup_box(node, "ubuntu/precise64", "ami-fa041696", "ubuntu-12-04-x64", "ubuntu-1204-precise-v20151119")
-    ubuntu_ssh_setup(node)
+  config.vm.define "debian-9-x64-test" do |node|
+    setup_box(node, "debian/stretch64", "", "debian-9-x64", "")
+    debian_ssh_setup(node)
   end
 
-  config.vm.define "ubuntu-12.04-x32-test" do |node|
-    setup_box(node, "ubuntu/precise32", "", "ubuntu-12-04-x32", "")
-    ubuntu_ssh_setup(node)
+  config.vm.define "debian-9-x32-test" do |node|
+    setup_box(node, "debian/stretch32", "", "debian-9-x32", "")
+    debian_ssh_setup(node)
   end
 
   config.vm.define "debian-8-x64-test" do |node|
@@ -559,11 +464,6 @@ Vagrant.configure(2) do |config|
 
   config.vm.define "debian-8-x32-test" do |node|
     setup_box(node, "debian/jessie32", "", "debian-8-x32", "")
-    debian_ssh_setup(node)
-  end
-
-  config.vm.define "debian-7-x64-test" do |node|
-    setup_box(node, "debian/wheezy64", "ami-98043785", "debian-7-0-x64", "")
     debian_ssh_setup(node)
   end
 
