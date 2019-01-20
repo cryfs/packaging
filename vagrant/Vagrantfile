@@ -107,20 +107,20 @@ def update_boost(config)
   SHELL
 end
 
-def bootstrap_ubuntu_17_10(config)
+def bootstrap_ubuntu_18_10(config)
     config.vm.provision :shell, inline: <<-SHELL
       echo Fixing hostname
-      echo "127.0.0.1 ubuntu-artful" >> /etc/hosts
+      echo "127.0.0.1 ubuntu-cosmic" >> /etc/hosts
 
       echo Installing dependencies
       DEBIAN_FRONTEND=noninteractive apt-get install -y git dpkg-dev rpm cmake g++ python libcurl4-openssl-dev libfuse-dev libcrypto++-dev libssl-dev libboost-filesystem-dev libboost-program-options-dev libboost-thread-dev
     SHELL
 end
 
-def bootstrap_ubuntu_17_04(config)
+def bootstrap_ubuntu_18_04(config)
     config.vm.provision :shell, inline: <<-SHELL
       echo Fixing hostname
-      echo "127.0.0.1 ubuntu-zesty" >> /etc/hosts
+      echo "127.0.0.1 ubuntu-bionic" >> /etc/hosts
 
       echo Installing dependencies
       DEBIAN_FRONTEND=noninteractive apt-get install -y git dpkg-dev rpm cmake g++ python libcurl4-openssl-dev libfuse-dev libcrypto++-dev libssl-dev libboost-filesystem-dev libboost-program-options-dev libboost-thread-dev
@@ -273,8 +273,8 @@ end
 
 Vagrant.configure(2) do |config|
   config.vm.provider :virtualbox do |v|
-    v.memory = 8192
-    v.cpus = 4
+    v.memory = 12288
+    v.cpus = 8
     # Needed for 32bit clients to be able to access multiple CPUs
     v.customize ["modifyvm", :id, "--ioapic", "on"]
   end
@@ -311,31 +311,31 @@ Vagrant.configure(2) do |config|
   # Machines for building .deb packages
   # -----------------------------------
 
-  config.vm.define "ubuntu-17.10-x64" do |node|
-    setup_box(node, "ubuntu/artful64", "ami-c041d3af", "ubuntu-17-10-x64", "")
+  config.vm.define "ubuntu-18.10-x64" do |node|
+    setup_box(node, "ubuntu/cosmic64", "", "ubuntu-18-10-x64", "")
     ubuntu_ssh_setup(node)
-    provision(node, :bootstrap_ubuntu_17_10)
+    provision(node, :bootstrap_ubuntu_18_10)
     node.vbguest.installer = VagrantVbguest::Installers::Ubuntu
   end
 
-  config.vm.define "ubuntu-17.10-x32" do |node|
-    setup_box(node, "ubuntu/artful32", "", "ubuntu-17-10-x32", "")
+  config.vm.define "ubuntu-18.10-x32" do |node|
+    setup_box(node, "ubuntu/cosmic32", "", "ubuntu-18-10-x32", "")
     ubuntu_ssh_setup(node)
-    provision(node, :bootstrap_ubuntu_17_10)
+    provision(node, :bootstrap_ubuntu_18_10)
     node.vbguest.installer = VagrantVbguest::Installers::Ubuntu
   end
 
-  config.vm.define "ubuntu-17.04-x64" do |node|
-    setup_box(node, "ubuntu/zesty64", "ami-daba31b5", "ubuntu-17-04-x64", "ubuntu-1704")
+  config.vm.define "ubuntu-18.04-x64" do |node|
+    setup_box(node, "ubuntu/bionic64", "", "ubuntu-18-04-x64", "ubuntu-1804")
     ubuntu_ssh_setup(node)
-    provision(node, :bootstrap_ubuntu_17_04)
+    provision(node, :bootstrap_ubuntu_18_04)
     node.vbguest.installer = VagrantVbguest::Installers::Ubuntu
   end
 
-  config.vm.define "ubuntu-17.04-x32" do |node|
-    setup_box(node, "ubuntu/zesty32", "", "ubuntu-17-04-x32", "")
+  config.vm.define "ubuntu-18.04-x32" do |node|
+    setup_box(node, "ubuntu/bionic32", "", "ubuntu-18-04-x32", "")
     ubuntu_ssh_setup(node)
-    provision(node, :bootstrap_ubuntu_17_04)
+    provision(node, :bootstrap_ubuntu_18_04)
     node.vbguest.installer = VagrantVbguest::Installers::Ubuntu
   end
 
