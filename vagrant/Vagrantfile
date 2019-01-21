@@ -318,22 +318,8 @@ Vagrant.configure(2) do |config|
     node.vbguest.installer = VagrantVbguest::Installers::Ubuntu
   end
 
-  config.vm.define "ubuntu-18.10-x32" do |node|
-    setup_box(node, "ubuntu/cosmic32", "", "ubuntu-18-10-x32", "")
-    ubuntu_ssh_setup(node)
-    provision(node, :bootstrap_ubuntu_18_10)
-    node.vbguest.installer = VagrantVbguest::Installers::Ubuntu
-  end
-
   config.vm.define "ubuntu-18.04-x64" do |node|
     setup_box(node, "ubuntu/bionic64", "", "ubuntu-18-04-x64", "ubuntu-1804")
-    ubuntu_ssh_setup(node)
-    provision(node, :bootstrap_ubuntu_18_04)
-    node.vbguest.installer = VagrantVbguest::Installers::Ubuntu
-  end
-
-  config.vm.define "ubuntu-18.04-x32" do |node|
-    setup_box(node, "ubuntu/bionic32", "", "ubuntu-18-04-x32", "")
     ubuntu_ssh_setup(node)
     provision(node, :bootstrap_ubuntu_18_04)
     node.vbguest.installer = VagrantVbguest::Installers::Ubuntu
@@ -365,12 +351,6 @@ Vagrant.configure(2) do |config|
 
   config.vm.define "debian-9-x64" do |node|
     setup_box(node, "debian/stretch64", "", "debian-9-x64", "")
-    debian_ssh_setup(node)
-    provision(node, :bootstrap_debian_9)
-  end
-
-  config.vm.define "debian-9-x32" do |node|
-    setup_box(node, "debian/stretch32", "", "debian-9-x32", "")
     debian_ssh_setup(node)
     provision(node, :bootstrap_debian_9)
   end
