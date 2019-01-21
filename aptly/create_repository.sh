@@ -44,7 +44,7 @@ rm -rf $GPG_TMPDIR
 cp -R $GPG_HOMEDIR $GPG_TMPDIR
 
 ./build.sh
-docker run --rm -ti -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY -v "$DEB_DIRECTORY:/debfiles" -v "$GPG_TMPDIR:/root/.gnupg" cryfs/aptly create_repository.sh $OS $OS_DISTRIBUTION /debfiles
+sudo docker run --rm -ti -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY -v "$DEB_DIRECTORY:/debfiles" -v "$GPG_TMPDIR:/root/.gnupg" cryfs/aptly create_repository.sh $OS $OS_DISTRIBUTION /debfiles
 
 set +e
 
