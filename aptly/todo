@@ -1,11 +1,7 @@
 uploader.apt.cryfs
-AKIAIJ7IQZHXSSNTQNZQ
-lFxhSsolHzBCumRXrK1w0clB0Wm3Im3NYb9khcxq
 
 gpg keydrop
 
-root@d1111cd8adf4:/# export AWS_SECRET_ACCESS_KEY="APml78EjvsE3w7nzSkezKIJ08yrxnzaDq7XcO0qB"
-root@d1111cd8adf4:/# export AWS_ACCESS_KEY_ID="AKIAJC5HOSACS2LFWBSA"
 
 /root/.aptly.conf:
 {
