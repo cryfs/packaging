@@ -107,10 +107,20 @@ def update_boost(config)
   SHELL
 end
 
-def bootstrap_ubuntu_18_10(config)
+def bootstrap_ubuntu_20_10(config)
     config.vm.provision :shell, inline: <<-SHELL
       echo Fixing hostname
-      echo "127.0.0.1 ubuntu-cosmic" >> /etc/hosts
+      echo "127.0.0.1 ubuntu-bionic" >> /etc/hosts
+
+      echo Installing dependencies
+      DEBIAN_FRONTEND=noninteractive apt-get install -y git dpkg-dev rpm cmake g++ python libcurl4-openssl-dev libfuse-dev libcrypto++-dev libssl-dev libboost-filesystem-dev libboost-program-options-dev libboost-thread-dev
+    SHELL
+end
+
+def bootstrap_ubuntu_20_04(config)
+    config.vm.provision :shell, inline: <<-SHELL
+      echo Fixing hostname
+      echo "127.0.0.1 ubuntu-bionic" >> /etc/hosts
 
       echo Installing dependencies
       DEBIAN_FRONTEND=noninteractive apt-get install -y git dpkg-dev rpm cmake g++ python libcurl4-openssl-dev libfuse-dev libcrypto++-dev libssl-dev libboost-filesystem-dev libboost-program-options-dev libboost-thread-dev
@@ -137,14 +147,12 @@ def bootstrap_ubuntu_16_04(config)
     SHELL
 end
 
-def bootstrap_ubuntu_14_04(config)
+def bootstrap_debian_10(config)
+    # Problem with debian on digital ocean: https://github.com/smdahlen/vagrant-digitalocean/issues/203
     config.vm.provision :shell, inline: <<-SHELL
       echo Installing dependencies
-      DEBIAN_FRONTEND=noninteractive apt-get install -y git dpkg-dev rpm cmake g++ python libcurl4-openssl-dev software-properties-common libfuse-dev libcrypto++-dev libssl-dev
+      DEBIAN_FRONTEND=noninteractive apt-get install -y git dpkg-dev rpm cmake python g++ libcurl4-openssl-dev libfuse-dev fuse libcrypto++-dev libssl-dev libboost-filesystem-dev libboost-program-options-dev libboost-thread-dev
     SHELL
-
-    update_cmake(config)
-    update_boost(config)
 end
 
 def bootstrap_debian_9(config)
@@ -153,17 +161,6 @@ def bootstrap_debian_9(config)
       echo Installing dependencies
       DEBIAN_FRONTEND=noninteractive apt-get install -y git dpkg-dev rpm cmake python g++ libcurl4-openssl-dev libfuse-dev fuse libcrypto++-dev libssl-dev libboost-filesystem-dev libboost-program-options-dev libboost-thread-dev
     SHELL
-end
-
-def bootstrap_debian_8(config)
-    # Problem with debian on digital ocean: https://github.com/smdahlen/vagrant-digitalocean/issues/203
-    config.vm.provision :shell, inline: <<-SHELL
-      echo Installing dependencies
-      DEBIAN_FRONTEND=noninteractive apt-get install -y git dpkg-dev rpm cmake python g++ libcurl4-openssl-dev libfuse-dev fuse libcrypto++-dev libssl-dev
-    SHELL
-
-    update_cmake(config)
-    update_boost(config)
 end
 
 #def setup_swap(config)
@@ -311,10 +308,17 @@ Vagrant.configure(2) do |config|
   # Machines for building .deb packages
   # -----------------------------------
 
-  config.vm.define "ubuntu-18.10-x64" do |node|
-    setup_box(node, "ubuntu/cosmic64", "", "ubuntu-18-10-x64", "")
+  config.vm.define "ubuntu-20.10-x64" do |node|
+    setup_box(node, "ubuntu/groovy64", "", "ubuntu-20-10-x64", "ubuntu-2019")
     ubuntu_ssh_setup(node)
-    provision(node, :bootstrap_ubuntu_18_10)
+    provision(node, :bootstrap_ubuntu_20_10)
+    node.vbguest.installer = VagrantVbguest::Installers::Ubuntu
+  end
+
+  config.vm.define "ubuntu-20.04-x64" do |node|
+    setup_box(node, "ubuntu/focal64", "", "ubuntu-20-04-x64", "ubuntu-2004")
+    ubuntu_ssh_setup(node)
+    provision(node, :bootstrap_ubuntu_20_04)
     node.vbguest.installer = VagrantVbguest::Installers::Ubuntu
   end
 
@@ -337,34 +341,16 @@ Vagrant.configure(2) do |config|
     provision(node, :bootstrap_ubuntu_16_04)
   end
 
-  config.vm.define "ubuntu-14.04-x64" do |node|
-    setup_box(node, "ubuntu/trusty64", "ami-02392b6e", "ubuntu-14-04-x64", "ubuntu-1404-trusty-v20151113")
-    ubuntu_ssh_setup(node)
-    provision(node, :bootstrap_ubuntu_14_04)
-  end
-
-  config.vm.define "ubuntu-14.04-x32" do |node|
-    setup_box(node, "ubuntu/trusty32", "", "ubuntu-14-04-x32", "")
-    ubuntu_ssh_setup(node)
-    provision(node, :bootstrap_ubuntu_14_04)
+  config.vm.define "debian-10-x64" do |node|
+    setup_box(node, "debian/buster64", "", "debian-10-x64", "")
+    debian_ssh_setup(node)
+    provision(node, :bootstrap_debian_10)
   end
 
   config.vm.define "debian-9-x64" do |node|
     setup_box(node, "debian/stretch64", "", "debian-9-x64", "")
     debian_ssh_setup(node)
     provision(node, :bootstrap_debian_9)
-  end
-
-  config.vm.define "debian-8-x64" do |node|
-    setup_box(node, "debian/jessie64", "ami-02b78e1f", "debian-8-x64", "debian-8-jessie-v20151104")
-    debian_ssh_setup(node)
-    provision(node, :bootstrap_debian_8)
-  end
-
-  config.vm.define "debian-8-x32" do |node|
-    setup_box(node, "debian/jessie32", "", "debian-8-x32", "")
-    debian_ssh_setup(node)
-    provision(node, :bootstrap_debian_8)
   end
 
   #config.vm.define "fedora-23-x64" do |node|
